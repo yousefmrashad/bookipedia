@@ -25,7 +25,7 @@ def main():
         print("Usage: python doctr_hocr.py [file path] [file type]: {image, pdf}")
         return
     
-    if sys.argv[1] == "help" or '-h':
+    if sys.argv[1] == "help" or sys.argv[1] == "-h":
         print("Usage: python doctr_hocr.py [file path] [file type]: {image, pdf}")
         return
     
