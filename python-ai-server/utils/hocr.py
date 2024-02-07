@@ -64,7 +64,7 @@ class HocrTransform:
     http://kba.cloud/hocr-spec/.
     """
 
-    box_pattern = re.compile(r'bbox\s*(\d+)\s*(\d+)\s*(\d+)\s*(\d+)')
+    box_pattern = re.compile(r'bbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)')
     baseline_pattern = re.compile(
         r'''
         baseline \s+
