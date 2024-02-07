@@ -14,11 +14,11 @@ def main():
     # Check if two arguments are provided
 
     if len(sys.argv) != 3:
-        print("Usage: python doctr_hocr.py [file path] [file type]: {image, pdf}")
+        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}")
         return
     
     if sys.argv[1] == "help" or sys.argv[1] == "-h":
-        print("Usage: python doctr_hocr.py [file path] [file type]: {image, pdf}")
+        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}")
         return
     
 
@@ -29,7 +29,7 @@ def main():
 
     type = sys.argv[2]
 
-    if type == "image":
+    if type == "img":
         docs = DocumentFile.from_images(doc)
     elif type == "pdf":
         docs = DocumentFile.from_pdf(doc, scale = 4)
