@@ -32,10 +32,10 @@ def main():
     if type == "img":
         docs = DocumentFile.from_images(doc)
     elif type == "pdf":
-        docs = DocumentFile.from_pdf(doc, scale = 4)
+        docs = DocumentFile.from_pdf(doc, scale = 4.1667)
 
     model = ocr_predictor(det_arch='db_resnet50_rotation',
-                          reco_arch='crnn_vgg16_bn',
+                          reco_arch='crnn_mobilenet_v3_large',
                           assume_straight_pages= False,
                           pretrained=True,
                           export_as_straight_boxes= True).cuda()
