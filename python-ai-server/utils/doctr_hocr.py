@@ -34,7 +34,11 @@ def main():
     elif type == "pdf":
         docs = DocumentFile.from_pdf(doc, scale = 4)
 
-    model = ocr_predictor(det_arch='db_resnet50', reco_arch='crnn_vgg16_bn', pretrained=True).cuda()
+    model = ocr_predictor(det_arch='db_resnet50_rotation',
+                          reco_arch='crnn_vgg16_bn',
+                          assume_straight_pages= False,
+                          pretrained=True,
+                          export_as_straight_boxes= True).cuda()
 
     result = model(docs)
 
