@@ -1,14 +1,25 @@
 # Imports
-from tempfile import TemporaryDirectory
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfReader
 from PIL import Image
 import sys
 import time
 import pytesseract
 from pdf2image import convert_from_path
 import os
-
+import io
 def main():
+    """
+    Entry point of the program.
+    
+    This function takes two command-line arguments: [file path] and [file type].
+    It processes the specified document based on the provided file type and generates an hOCR PDF file.
+    
+    Args:
+        None (Uses command-line arguments)
+    
+    Returns:
+        None
+    """
     start_time = time.time()
 
     # Check if two arguments are provided
@@ -45,18 +56,11 @@ def main():
 
     merger = PdfMerger()
 
-    for i, img in enumerate(docs):
-        with TemporaryDirectory() as tmpdir:
-
-            # use pytesseract to extract text from the image
-            pdf = pytesseract.image_to_pdf_or_hocr(img, lang='eng', extension='pdf')
-
-            # print the extracted text
-            with open(f'{tmpdir}/{i}.pdf', 'wb') as f:
-                f.write(pdf)
-
-            merger.append(f'{tmpdir}/{i}.pdf')
-
+    for img in docs:
+        pdf = pytesseract.image_to_pdf_or_hocr(img, lang='eng', extension='pdf')
+        pdf_bytes_stream = io.BytesIO(pdf)
+        pdf = PdfReader(pdf_bytes_stream)
+        merger.append(pdf)
     merger.write(f'{doc_noex}_hOCR.pdf')
 
     end_time = time.time()

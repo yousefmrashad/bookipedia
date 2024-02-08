@@ -16,6 +16,7 @@ from itertools import pairwise
 from math import atan, cos, pi
 from pathlib import Path
 from xml.etree import ElementTree
+from PIL import Image
 
 from pikepdf import Matrix, Name, Rectangle
 from pikepdf.canvas import (
@@ -76,7 +77,7 @@ class HocrTransform:
     def __init__(
         self,
         *,
-        hocr_filename: str | Path,
+        hocr: ElementTree.Element | str | Path = None,
         dpi: float,
         debug: bool = False,
         fontname: Name = Name("/f-0-0"),
@@ -97,8 +98,13 @@ class HocrTransform:
             )
         else:
             self.render_options = debug_render_options or DebugRenderOptions()
+
         self.dpi = dpi
-        self.hocr = ElementTree.parse(os.fspath(hocr_filename))
+
+        if isinstance(hocr, ElementTree.ElementTree):
+            self.hocr = hocr
+        else:
+            self.hocr = ElementTree.parse(os.fspath(hocr))
         self._fontname = fontname
         self._font = font
 
@@ -164,8 +170,8 @@ class HocrTransform:
     def to_pdf(
         self,
         *,
-        out_filename: Path,
-        image_filename: Path | None = None,
+        #out_filename: Path,
+        image = None,
         invisible_text: bool = True,
     ) -> None:
         """Creates a PDF file with an image superimposed on top of the text.
@@ -178,7 +184,7 @@ class HocrTransform:
 
         Arguments:
             out_filename: Path of PDF to write.
-            image_filename: Image to use for this file. If omitted, the OCR text
+            image: Image to use for this file. If omitted, the OCR text
                 is shown.
             invisible_text: If True, text is rendered invisible so that is
                 selectable but never drawn. If False, text is visible and may
@@ -231,13 +237,13 @@ class HocrTransform:
                     True,
                 )
         # put the image on the page, scaled to fill the page
-        if image_filename is not None:
+        if image is not None:
             canvas.do.draw_image(
-                image_filename, 0, 0, width=self.width, height=self.height
+                image, 0, 0, width=self.width, height=self.height
             )
 
         # finish up the page and save it
-        canvas.to_pdf().save(out_filename)
+        return canvas.to_pdf()
 
     def _get_text_direction(self, par):
         """Get the text direction of the paragraph.

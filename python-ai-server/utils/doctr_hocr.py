@@ -1,13 +1,35 @@
 # Imports
-from tempfile import TemporaryDirectory
-from PyPDF2 import PdfMerger
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 from PIL import Image
 from hocr import HocrTransform
 import sys
 import time
+import pikepdf
 
+def main():
+    """
+    Entry point of the script.
+    
+    This function takes two command-line arguments: [file path] and [file type].
+    The [file path] should be the path to the input document file, and the [file type]
+    should be either 'img' for image files or 'pdf' for PDF files.
+    
+    The function performs OCR (Optical Character Recognition) on the input document
+    using the specified file type. It uses the 'ocr_predictor' model to extract text
+    from the document and generates an hOCR (HTML OCR) output. The hOCR output is then
+    converted to a PDF file and saved with the same name as the input document, but
+    with '_hOCR.pdf' appended to the filename.
+    
+    The execution time of the script is also printed at the end.
+    """
+    start_time = time.time()
+
+    # Rest of the code...
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
 def main():
     start_time = time.time()
 
@@ -44,27 +66,20 @@ def main():
 
     xml_outputs = result.export_as_xml()
 
-    merger = PdfMerger()
-    for i, (xml, img) in enumerate(zip(xml_outputs, docs)):
-        with TemporaryDirectory() as tmpdir:
-            Image.fromarray(img).save(f'{tmpdir}/{i}.png')
+    pdf_output = pikepdf.Pdf.new()
 
-            xml[1].write(f'{tmpdir}/{i}.xml', encoding='utf-8', xml_declaration=True)
+    for (xml, img) in enumerate(zip(xml_outputs, docs)):
+        
+        hocr = HocrTransform(
+            hocr= xml[1],
+            dpi=300
+        )
 
-            hocr = HocrTransform(
-                hocr_filename=f'{tmpdir}/{i}.xml',
-                dpi=300
-            )
+        pdf = hocr.to_pdf(image=Image.fromarray(img))
+        
+        pdf_output.pages.extend(pdf.pages)
 
-            # step to obtain ocirized pdf
-            hocr.to_pdf(
-                out_filename=f'{tmpdir}/{i}.pdf',
-                image_filename=f'{tmpdir}/{i}.png',
-            )
-
-            merger.append(f'{tmpdir}/{i}.pdf')
-
-    merger.write(f'{doc_noex}_hOCR.pdf')
+    pdf_output.save(f'{doc}_hOCR.pdf')
 
     end_time = time.time()
     execution_time = end_time - start_time
