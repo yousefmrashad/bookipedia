@@ -79,7 +79,7 @@ def main():
         
         pdf_output.pages.extend(pdf.pages)
 
-    pdf_output.save(f'{doc}_hOCR.pdf')
+    pdf_output.save(f'{doc_noex}_hOCR.pdf')
 
     end_time = time.time()
     execution_time = end_time - start_time
