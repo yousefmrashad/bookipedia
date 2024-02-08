@@ -52,7 +52,7 @@ def main():
 
     pdf_output = pikepdf.Pdf.new()
 
-    for (xml, img) in enumerate(zip(xml_outputs, docs)):
+    for (xml, img) in zip(xml_outputs, docs):
         
         hocr = HocrTransform(
             hocr= xml[1],
