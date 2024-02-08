@@ -7,19 +7,15 @@ import pytesseract
 from pdf2image import convert_from_path
 import os
 import io
+
 def main():
     """
     Entry point of the program.
     
     This function takes two command-line arguments: [file path] and [file type].
     It processes the specified document based on the provided file type and generates an hOCR PDF file.
-    
-    Args:
-        None (Uses command-line arguments)
-    
-    Returns:
-        None
     """
+    
     start_time = time.time()
 
     # Check if two arguments are provided

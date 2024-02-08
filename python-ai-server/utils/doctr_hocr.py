@@ -10,27 +10,11 @@ import pikepdf
 def main():
     """
     Entry point of the script.
-    
-    This function takes two command-line arguments: [file path] and [file type].
-    The [file path] should be the path to the input document file, and the [file type]
-    should be either 'img' for image files or 'pdf' for PDF files.
-    
-    The function performs OCR (Optical Character Recognition) on the input document
-    using the specified file type. It uses the 'ocr_predictor' model to extract text
-    from the document and generates an hOCR (HTML OCR) output. The hOCR output is then
-    converted to a PDF file and saved with the same name as the input document, but
-    with '_hOCR.pdf' appended to the filename.
-    
-    The execution time of the script is also printed at the end.
+    Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.
+
+    Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}
     """
-    start_time = time.time()
 
-    # Rest of the code...
-
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time} seconds")
-def main():
     start_time = time.time()
 
     # Check if two arguments are provided
