@@ -3,13 +3,14 @@ from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 from PIL.Image import fromarray
 from hocr import HocrTransform
-import sys
 import time
 import pikepdf
 from deskew import determine_skew
 import numpy as np
 from skimage.transform import rotate
 from skimage.color import rgb2gray
+from filter import filter_image
+import argparse
 
 def deskew(docs):
     """
@@ -23,41 +24,43 @@ def deskew(docs):
         docs_desk.append(rotated.astype(np.uint8))
     return docs_desk
 
+def filter_docs(docs):
+    """
+    Apply a filter to the images.
+    """
+    docs_filtered = []
+    for doc in docs:
+        filtered = filter_image(doc)
+        multi = np.stack([filtered] * 3, axis=-1)
+        docs_filtered.append(multi)
+    return docs_filtered
+
 def main():
     """
     Entry point of the script.
+
+    Usage: doctr_hocr.py [-h] [--deskew] [--filter] file_path {img,pdf}
     Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.
-
-    Usage: python doctr_hocr.py [file path] [file type]: {img, pdf} [deskew(optional)]: {deskew, None}
-
     """
 
     start_time = time.time()
 
     # Check if two arguments are provided
 
-    if len(sys.argv) < 3:
-        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf} [deskew(optional)]: {deskew, None}")
-        return
+    parser = argparse.ArgumentParser(description="Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.")
+    parser.add_argument("file_path", help="Path to the file")
+    parser.add_argument("file_type", choices=["img", "pdf"], help="Type of the file: img or pdf")
+    parser.add_argument("-d", "--deskew", action="store_true", help="Perform deskewing (optional)")
+    parser.add_argument("-f", "--filter", action="store_true", help="Apply filter to the images (optional)")
     
-    if sys.argv[1] == "help" or sys.argv[1] == "-h":
-        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf} [deskew(optional)]: {deskew, None}")
-        return
-    
+    args = parser.parse_args()
 
-    # Extract arguments
-    doc = sys.argv[1]
-
+    doc = args.file_path
     doc_noex = doc.rsplit('.', 1)[0]
+    type = args.file_type
+    desk = args.deskew
+    filter = args.filter
 
-    type = sys.argv[2]
-
-    if len(sys.argv) == 4: 
-        desk = sys.argv[3]
-        if desk == "deskew":
-            desk = True
-    else:
-        desk = False
     
     if type == "img":
         docs = DocumentFile.from_images(doc)
@@ -67,7 +70,10 @@ def main():
     if desk:
         # Deskew the images
         docs = deskew(docs)
-
+    if filter:
+        # Apply a filter to the images
+        docs = filter_docs(docs)
+    
     model = ocr_predictor(det_arch='db_mobilenet_v3_large',
                           reco_arch='crnn_mobilenet_v3_large',
                           assume_straight_pages= True,
