@@ -5,23 +5,16 @@ from PIL.Image import fromarray
 from hocr import HocrTransform
 import time
 import pikepdf
-from deskew import determine_skew
+from deskew import correct_skew
 import numpy as np
-from skimage.transform import rotate
-from skimage.color import rgb2gray
 from filter import filter_image
 import argparse
 
 def deskew(docs):
-    """
-    Deskew the images using the deskew library.
-    """
     docs_desk = []
     for doc in docs:
-        gray = rgb2gray(doc)
-        angle = determine_skew(gray)
-        rotated = rotate(doc, angle, resize= True) * 255
-        docs_desk.append(rotated.astype(np.uint8))
+        doc = correct_skew(doc)
+        docs_desk.append(doc)
     return docs_desk
 
 def filter_docs(docs):

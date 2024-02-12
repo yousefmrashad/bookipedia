@@ -6,24 +6,11 @@ import pytesseract
 from pdf2image import convert_from_path
 import os
 import io
-from deskew import determine_skew
-import numpy as np
+from deskew import correct_skew
 from skimage.io import imread
-from skimage.transform import rotate
-from skimage.color import rgb2gray
 from filter import filter_image
 import argparse
 
-def deskew(img):
-    """
-    Deskew the images using the deskew library.
-    """
-    img = img[:, :, :3]
-    gray = rgb2gray(img)
-    angle = determine_skew(gray)
-    rotated = rotate(img, angle, resize= True) * 255
-    img_desk = rotated.astype(np.uint8)
-    return img_desk
 
 def main():
     """
@@ -67,7 +54,7 @@ def main():
 
         if desk:
             # Deskew the images
-            img = deskew(img)
+            img = correct_skew(img)
         if filter:
             # Apply filter
             img = filter_image(img)
