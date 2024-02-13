@@ -1,6 +1,5 @@
 # Imports
 from PyPDF2 import PdfMerger, PdfReader
-import sys
 import time
 import pytesseract
 from pdf2image import convert_from_path

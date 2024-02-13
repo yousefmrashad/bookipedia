@@ -382,6 +382,8 @@ class HocrTransform:
             elif text_direction == TextDirection.RTL:
                 text.text_transform(Matrix(-1, 0, 0, -1, box.llx + box.width, 0))
             text.horiz_scale(100 * box.width / font_width)
+            if next_elem is None:
+                elemtxt = elemtxt = elemtxt + '\n'
             text.show(self._font.text_encode(elemtxt))
 
         # Get coordinates of the next word (if there is one)
