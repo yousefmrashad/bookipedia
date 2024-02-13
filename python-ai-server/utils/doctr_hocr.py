@@ -1,48 +1,75 @@
 # Imports
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
-from PIL import Image
+from PIL.Image import fromarray
 from hocr import HocrTransform
-import sys
 import time
 import pikepdf
+from deskew import correct_skew
+import numpy as np
+from filter import filter_image
+import argparse
+
+def deskew(docs):
+    docs_desk = []
+    for doc in docs:
+        doc = correct_skew(doc)
+        docs_desk.append(doc)
+    return docs_desk
+
+def filter_docs(docs):
+    """
+    Apply a filter to the images.
+    """
+    docs_filtered = []
+    for doc in docs:
+        filtered = filter_image(doc)
+        multi = np.stack([filtered] * 3, axis=-1)
+        docs_filtered.append(multi)
+    return docs_filtered
 
 def main():
     """
     Entry point of the script.
-    Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.
 
-    Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}
+    Usage: doctr_hocr.py [-h] [--deskew] [--filter] file_path {img,pdf}
+    Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.
     """
 
     start_time = time.time()
 
     # Check if two arguments are provided
 
-    if len(sys.argv) != 3:
-        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}")
-        return
+    parser = argparse.ArgumentParser(description="Extracts text from images or PDFs using OCR and saves the result as an hOCR PDF file.")
+    parser.add_argument("file_path", help="Path to the file")
+    parser.add_argument("file_type", choices=["img", "pdf"], help="Type of the file: img or pdf")
+    parser.add_argument("-d", "--deskew", action="store_true", help="Perform deskewing (optional)")
+    parser.add_argument("-f", "--filter", action="store_true", help="Apply filter to the images (optional)")
     
-    if sys.argv[1] == "help" or sys.argv[1] == "-h":
-        print("Usage: python doctr_hocr.py [file path] [file type]: {img, pdf}")
-        return
-    
+    args = parser.parse_args()
 
-    # Extract arguments
-    doc = sys.argv[1]
-
+    doc = args.file_path
     doc_noex = doc.rsplit('.', 1)[0]
+    type = args.file_type
+    desk = args.deskew
+    filter = args.filter
 
-    type = sys.argv[2]
-
+    
     if type == "img":
         docs = DocumentFile.from_images(doc)
     elif type == "pdf":
         docs = DocumentFile.from_pdf(doc, scale = 4.1667)
-
-    model = ocr_predictor(det_arch='db_resnet50_rotation',
+    
+    if desk:
+        # Deskew the images
+        docs = deskew(docs)
+    if filter:
+        # Apply a filter to the images
+        docs = filter_docs(docs)
+    
+    model = ocr_predictor(det_arch='db_mobilenet_v3_large',
                           reco_arch='crnn_mobilenet_v3_large',
-                          assume_straight_pages= False,
+                          assume_straight_pages= True,
                           pretrained=True,
                           export_as_straight_boxes= True).cuda()
 
@@ -59,7 +86,7 @@ def main():
             dpi=300
         )
 
-        pdf = hocr.to_pdf(image=Image.fromarray(img))
+        pdf = hocr.to_pdf(image=fromarray(img))
         
         pdf_output.pages.extend(pdf.pages)
 
