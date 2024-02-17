@@ -32,8 +32,8 @@ from pikepdf.canvas import (
     TextDirection,
 )
 
-from font import EncodableFont as Font
-from font import GlyphlessFont
+from utils.font import EncodableFont as Font
+from utils.font import GlyphlessFont
 
 log = logging.getLogger(__name__)
 
