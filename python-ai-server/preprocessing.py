@@ -215,17 +215,36 @@ def hocr(path, deskew_flag=False, filter_flag=False):
     # Save the output PDF with hOCR format
     pdf_output.save(path_hOCR)
 
-    return path_hOCR
+    return result.export()
+
+def json_to_text(json):
+    # Extracting text from "value" keys
+    lines = []
+    for page in json["pages"]:
+        for block in page["blocks"]:
+            for line in block["lines"]:
+                text_values = []
+                for word in line["words"]:
+                    text_values.append(word["value"])
+                lines.append(text_values)
+                
+    # Writing text values to a text file
+    text = ''
+    for line in lines:
+        for value in line:
+            text += value + ' '
+        text += '\n'
+    return text
 
 def pdf_to_text(path):
     """
     Convert a PDF file to text.
 
-    Args:
-        path (str): The path to the PDF file.
+    Parameters:
+    path (str): The path to the PDF file.
 
     Returns:
-        str: The extracted text from the PDF file.
+    str: The extracted text from the PDF file.
     """
     # Check if the PDF is already text-based
     text = is_text_based(path)
@@ -233,13 +252,10 @@ def pdf_to_text(path):
     if text:
         pass
     else:
-        # Convert the PDF to HOCR format
-        path_hocr = hocr(path)
-        with fitz.open(path_hocr) as doc:
-            text = ""
-            for page in doc:
-                text += page.get_text()
-    
+        # Perform OCR on the PDF
+        json = hocr(path)
+        # Convert the OCR results to text
+        text = json_to_text(json)
     return text
 
 def count_tokens(text: str) -> int:
