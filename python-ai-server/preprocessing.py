@@ -254,7 +254,7 @@ def count_tokens(text: str) -> int:
     encoding = get_encoding('cl100k_base')
     return len(encoding.encode(text))
 
-def chunk(text, chunk_size=128, chunk_overlap=24, separators= ['\n\n', '(?<=\.)',  '\n']):
+def chunk(text, chunk_size=512, chunk_overlap=24, separators= ['\n\n', '(?<=\.)',  '\n']):
     """
     Splits the given text into smaller chunks.
 
