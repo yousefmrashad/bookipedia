@@ -1,9 +1,13 @@
 import cv2 as cv
 import numpy as np
+from PIL.Image import fromarray
 from tiktoken import get_encoding
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from utils.hocr import HocrTransform
 import fitz
+from doctr.models import ocr_predictor
+from doctr.io import DocumentFile
+from pikepdf import Pdf
 
 def map_values(img, in_min, in_max, out_min, out_max):
     '''
@@ -143,7 +147,6 @@ def ocr(docs, deskew_flag=False, filter_flag=False):
     Returns:
         doctr Document: The OCR results as a Document object.
     """
-    from doctr.models import ocr_predictor
 
     # Apply image filtering if filter_flag is True
     if filter_flag:
@@ -177,9 +180,6 @@ def hocr(path, deskew_flag=False, filter_flag=False):
     Returns:
         str: The path to the output PDF file with hOCR format.
     """
-    from pikepdf import Pdf
-    from PIL.Image import fromarray
-    from doctr.io import DocumentFile
 
     # Load the PDF document as a DocumentFile
     docs = DocumentFile.from_pdf(path, scale=5)
@@ -258,7 +258,7 @@ def chunk(
         text,
         size=128,
         overlap=24,
-        separators= ['\n\n', '(?<=\.\s)', '\n'],
+        separators= ['\n\n', '(?<=\w{2}\.\s)', '\n'],
         len_func = count_tokens):
     """
     Splits the given text into smaller chunks.
