@@ -254,21 +254,31 @@ def count_tokens(text: str) -> int:
     encoding = get_encoding('cl100k_base')
     return len(encoding.encode(text))
 
-def chunk(text, chunk_size=512, chunk_overlap=24, separators= ['\n\n', '(?<=\.)',  '\n']):
+def chunk(
+        text,
+        size=128,
+        overlap=24,
+        separators= ['\n\n', '(?<=\.\s)', '\n'],
+        len_func = count_tokens):
     """
     Splits the given text into smaller chunks.
 
     Args:
         text (str): The text to be chunked.
+        size (int, optional): The maximum size of each chunk. Defaults to 128.
+        overlap (int, optional): The overlap between consecutive chunks. Defaults to 24.
+        separators (list, optional): A list of regex patterns used as separators for chunking. Defaults to ['\n\n', '(?<=\.\s)', '\n'].
+        len_func (function, optional): A function used to calculate the length of a chunk. Defaults to count_tokens.
 
     Returns:
         langchain Document: The chunked text as a Document object.
     """
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = chunk_size,
-        chunk_overlap = chunk_overlap,
+        chunk_size = size,
+        chunk_overlap = overlap,
         is_separator_regex= True,
-        separators = separators
+        separators = separators,
+        length_function = len_func
     )
 
     chunks = text_splitter.create_documents([text])
