@@ -218,22 +218,14 @@ def hocr(path, deskew_flag=False, filter_flag=False):
     return result.export()
 
 def json_to_text(json):
-    # Extracting text from "value" keys
     lines = []
     for page in json["pages"]:
         for block in page["blocks"]:
             for line in block["lines"]:
-                text_values = []
-                for word in line["words"]:
-                    text_values.append(word["value"])
+                text_values = [word["value"] for word in line["words"]]
                 lines.append(text_values)
                 
-    # Writing text values to a text file
-    text = ''
-    for line in lines:
-        for value in line:
-            text += value + ' '
-        text += '\n'
+    text = '\n'.join([' '.join(line) for line in lines])
     return text
 
 def pdf_to_text(path):
