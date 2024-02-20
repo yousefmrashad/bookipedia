@@ -199,7 +199,7 @@ def hocr(path, deskew_flag=False, filter_flag=False):
         # Create an HocrTransform object
         hocr = HocrTransform(
             hocr=xml[1],
-            dpi=300
+            dpi=360
         )
 
         # Convert the HOCR and image to PDF
@@ -256,7 +256,7 @@ def count_tokens(text: str) -> int:
 
 def chunk(
         text,
-        size=128,
+        size=256,
         overlap=24,
         separators= ['\n\n', '(?<=\w{2}\.\s)', '\n'],
         len_func = count_tokens):
