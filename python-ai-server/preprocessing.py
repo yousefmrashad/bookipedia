@@ -111,7 +111,7 @@ def is_text_based(pdf_path):
         with fitz.open(pdf_path) as doc:
             text = ""
             for page in doc:
-                text += page.get_text()
+                text += page.get_text() + '\n\n'
             if text.strip():
                 return text
             else:
@@ -224,9 +224,12 @@ def json_to_text(json):
             for line in block["lines"]:
                 text_values = [word["value"] for word in line["words"]]
                 lines.append(text_values)
-                
+        # Add a double newline at the end of each page
+        lines.append(['\n'])
+
     text = '\n'.join([' '.join(line) for line in lines])
     return text
+
 
 def pdf_to_text(path):
     """
