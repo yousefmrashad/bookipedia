@@ -262,9 +262,11 @@ class OCR:
     # -------------------------------------------------------------------- #
 
     # OCR Pipeline
-    def apply_ocr(self, handwritten=False):
-        if (handwritten):
-            self.docs = list(map(lambda doc: OCR.correct_skew(OCR.filter_image(doc)), self.docs))
+    def apply_ocr(self, deskew=False, filter = False):
+        if(filter):
+            self.docs = [OCR.filter_image(page) for page in self.docs]
+        if(deskew):
+            self.docs = [OCR.correct_skew(page) for page in self.docs]
 
         self.ocr()
         self.hocr()

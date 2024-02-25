@@ -20,7 +20,7 @@ from xml.etree.ElementTree import Element
 
 from math import atan, cos, sin
 from typing import Dict, Optional, Tuple
-import re, PIL.Image, pypdf, tempfile
+import re, PIL.Image, pypdf
 
 # Langchain
 from langchain_community.document_loaders import PyPDFLoader
