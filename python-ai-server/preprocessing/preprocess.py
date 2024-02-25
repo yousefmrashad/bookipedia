@@ -17,7 +17,7 @@ def text_based_document(doc_path: str):
     
     from ocr import OCR
     OCR(doc_path).apply_ocr()
-    doc_path = doc_path.replace(".pdf", "_ocr.pdf")
+    doc_path = doc_path.replace(".pdf", "_hocr.pdf")
 # -------------------------------------------------------------------- #
 
 # Make sure that the Document is text-based document
