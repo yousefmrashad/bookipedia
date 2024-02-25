@@ -1,14 +1,15 @@
 from utils_config import *
 from utils import *
 
-from doc_preprocess import DocLoader
+from doc_preprocess import Document
 # -------------------------------------------------------------------- #
 
-DOC_PATH = ""
+# DOC_PATH = ""
+DOC_PATH = r"C:\Users\LEGION\Desktop\sg.pdf"
 DOC_ID = 1
 # -------------------------------------------------------------------- #
 
-def get_text_document(doc_path: str):
+def text_based_document(doc_path: str):
     pages = PyPDF2.PdfReader(doc_path).pages
     for page in pages:
         if (page.extract_text().strip()):
@@ -17,7 +18,10 @@ def get_text_document(doc_path: str):
     from ocr import OCR
     OCR(doc_path).apply_ocr()
 # -------------------------------------------------------------------- #
-    
-loader = DocLoader(DOC_PATH)
-docs = loader.load()
-print(docs)
+
+# Make sure that the Document is text-based document
+text_based_document(DOC_PATH)
+
+# Prepare the document
+document = Document(DOC_PATH, DOC_ID)
+document.preprocess()

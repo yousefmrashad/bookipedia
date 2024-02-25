@@ -26,6 +26,9 @@ import re, PIL.Image, PyPDF2, tempfile
 from langchain_community.document_loaders import PyPDFium2Loader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from langchain_core.embeddings import Embeddings
+from angle_emb import AnglE, Prompts
+
 # OpenAI
 import tiktoken
 # -------------------------------------------------------------------- #
@@ -35,3 +38,11 @@ import tiktoken
 # OCR
 DETECTION_MODEL = "db_mobilenet_v3_large"
 RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
+
+# Document Load
+CHUNCK_SIZE = 256
+CHUNK_OVERLAP = 32
+SEPARATORS = ["(?<=\w{2}\.\s)", "\n"]
+
+# Embedding Model
+EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
