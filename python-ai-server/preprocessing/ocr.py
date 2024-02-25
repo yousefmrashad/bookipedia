@@ -54,19 +54,10 @@ class HocrParser:
             text += element.tail
         return text
 
-    def export_pdfa(self,
-                    out_filename: str,
-                    hocr: ET.ElementTree,
-                    image: Optional[np.ndarray] = None,
-                    fontname: str = "Times-Roman",
-                    fontsize: int = 1,
-                    invisible_text: bool = True,
-                    add_spaces: bool = True,
-                    dpi: int = 360):
+    def get_width_height(self, hocr: ET.ElementTree, dpi: int = 360) -> Tuple[float, float]:
         """
-        Generates a PDF/A document from a hOCR document.
+        Returns the width and height of the page in PDF units (pt)
         """
-
         width, height = None, None
         # Get the image dimensions
         for div in hocr.findall(".//div[@class='ocr_page']"):
@@ -77,8 +68,33 @@ class HocrParser:
             break
         if (width is None or height is None):
             raise ValueError("Could not determine page size")
+        
+        return width, height
+    
+    
+    def create_pdf(self,
+                    out_filename: str,
+                    hocr: ET.ElementTree,
+                    dpi: int = 360) -> Canvas: 
+        
+        width, height = self.get_width_height(hocr, dpi)
 
         pdf = Canvas(out_filename, pagesize=(width, height), pageCompression=1)
+
+        return pdf
+    
+    def perform_hocr(self,
+                    pdf: Canvas,
+                    hocr: ET.ElementTree,
+                    image: Optional[np.ndarray] = None,
+                    fontname: str = "Times-Roman",
+                    invisible_text: bool = True,
+                    add_spaces: bool = True,
+                    dpi: int = 360):
+        """
+        Generates a PDF/A document from a hOCR document.
+        """
+        width, height = self.get_width_height(hocr, dpi)
 
         span_elements = [element for element in hocr.iterfind(".//span")]
         for line in span_elements:
@@ -86,7 +102,6 @@ class HocrParser:
                 # get information from xml
                 pxl_line_coords = self._element_coordinates(line)
                 line_box = self._pt_from_pixel(pxl_line_coords, dpi)
-
                 # compute baseline
                 slope, pxl_intercept = self._get_baseline(line)
                 if (abs(slope) < 0.005):
@@ -95,6 +110,9 @@ class HocrParser:
                 cos_a, sin_a = cos(angle), sin(angle)
                 intercept = pxl_intercept / dpi * inch
                 baseline_y2 = height - (line_box['y2'] + intercept)
+
+                line_box_height = abs(line_box['y2'] - line_box['y1']) / cos(angle)
+                fontsize = line_box_height + intercept
 
                 # configure options
                 text = pdf.beginText()
@@ -140,12 +158,13 @@ class HocrParser:
         if (image is not None):
             pdf.drawImage(ImageReader(PIL.Image.fromarray(image)),
                           0, 0, width=width, height=height)
-        pdf.save()
+        pdf.showPage()
+        return pdf
 # -------------------------------------------------------------------- #
 
 # OCR
 class OCR:
-    def __init__(self, doc_path: str, scale=5):
+    def __init__(self, doc_path: str, scale: int = 5):
         self.doc_path = doc_path
         self.scale = scale
         self.docs = DocumentFile.from_pdf(doc_path, scale=scale)
@@ -225,24 +244,21 @@ class OCR:
                             pretrained=True,
                             export_as_straight_boxes=True).cuda()
         
-        self.result = model.forward(self.docs)
+        result = model.forward(self.docs)
+        self.result: Document = result
     # -------------------------------------------------------------------- #
 
     # HOCR
     def hocr(self):
+        out_filename = self.doc_path.replace('.pdf', '_hocr.pdf')
         xml_output = self.result.export_as_xml()
 
         parser = HocrParser()
-        pdf_merger = PyPDF2.PdfMerger()
+        pdf = parser.create_pdf(out_filename, xml_output[0][1])
         
-        with tempfile.TemporaryDirectory() as tmpdir:
-            for i, (xml, img) in enumerate(zip(xml_output, self.docs)):
-                page_tmpdir = os.path.join(tmpdir, f"{i+1}.pdf")
-                parser.export_pdfa(page_tmpdir, hocr=xml[1], image=img)
-                pdf_merger.append(page_tmpdir)
-            
-            pdf_merger.write(self.doc_path)
-            pdf_merger.close()
+        for hocr, page in zip(xml_output, self.docs):
+            pdf  = parser.perform_hocr(pdf, hocr[1], image=page)
+        pdf.save()
     # -------------------------------------------------------------------- #
 
     # OCR Pipeline

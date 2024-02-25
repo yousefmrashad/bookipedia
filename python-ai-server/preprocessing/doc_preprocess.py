@@ -18,7 +18,7 @@ class AnglEEmbedding(Embeddings):
         return self.model.encode(texts)
 
     def embed_query(self, text):
-        texts = [{"text": text} for text in texts] if (self.prompt) else texts
+        text = {"text": text} if (self.prompt) else text
         return self.model.encode(text).squeeze()
 # -------------------------------------------------------------------- #
 
@@ -35,18 +35,15 @@ class Document:
                                                     separators=separators,
                                                     is_separator_regex=True)
         
-        self.chunks = PyPDFium2Loader(self.doc_path).load_and_split(text_splitter)
+        self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
             
     def chunks_to_embeddings(self):
-        embedding_model = AnglEEmbedding()
-        self.embeddings = embedding_model.embed_documents(self.chunks)
-        # معرفش بقا كده صح ولا ايه
+        pass
+        
 
     def save_to_database(self):
         pass
 
     def preprocess(self):
         self.load_and_split()
-        self.chunks_to_embeddings()
-        self.save_to_database()
 # -------------------------------------------------------------------- #

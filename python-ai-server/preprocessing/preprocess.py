@@ -5,12 +5,12 @@ from doc_preprocess import Document
 # -------------------------------------------------------------------- #
 
 # DOC_PATH = ""
-DOC_PATH = r"C:\Users\LEGION\Desktop\sg.pdf"
+DOC_PATH = r""
 DOC_ID = 1
 # -------------------------------------------------------------------- #
 
 def text_based_document(doc_path: str):
-    pages = PyPDF2.PdfReader(doc_path).pages
+    pages = pypdf.PdfReader(doc_path).pages
     for page in pages:
         if (page.extract_text().strip()):
             return

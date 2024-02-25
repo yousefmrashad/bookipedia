@@ -20,10 +20,10 @@ from xml.etree.ElementTree import Element
 
 from math import atan, cos, sin
 from typing import Dict, Optional, Tuple
-import re, PIL.Image, PyPDF2, tempfile
+import re, PIL.Image, pypdf, tempfile
 
 # Langchain
-from langchain_community.document_loaders import PyPDFium2Loader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from langchain_core.embeddings import Embeddings
