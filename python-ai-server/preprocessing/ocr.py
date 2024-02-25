@@ -112,11 +112,11 @@ class HocrParser:
                 baseline_y2 = height - (line_box['y2'] + intercept)
 
                 line_box_height = abs(line_box['y2'] - line_box['y1']) / cos(angle)
-                fontsize = line_box_height + intercept
+                fontsize = (line_box_height + intercept) * inch / dpi
 
                 # configure options
                 text = pdf.beginText()
-                text.setFont(fontname, fontsize)
+                text.setFont(fontname, fontsize, leading= fontsize * 0.5)
                 pdf.setFillColor(black)
                 if (invisible_text):
                     text.setTextRenderMode(3)  # invisible text
