@@ -61,7 +61,7 @@ class HocrParser:
                     fontname: str = "Times-Roman",
                     fontsize: int = 1,
                     invisible_text: bool = True,
-                    add_spaces: bool = False,
+                    add_spaces: bool = True,
                     dpi: int = 360):
         """
         Generates a PDF/A document from a hOCR document.
@@ -145,7 +145,7 @@ class HocrParser:
 
 # OCR
 class OCR:
-    def __init__(self, doc_path: str, scale: int = 5):
+    def __init__(self, doc_path: str, scale=5):
         self.doc_path = doc_path
         self.scale = scale
         self.docs = DocumentFile.from_pdf(doc_path, scale=scale)
@@ -225,8 +225,7 @@ class OCR:
                             pretrained=True,
                             export_as_straight_boxes=True).cuda()
         
-        result = model.forward(self.docs)
-        self.result: Document = result
+        self.result = model.forward(self.docs)
     # -------------------------------------------------------------------- #
 
     # HOCR
@@ -235,7 +234,7 @@ class OCR:
 
         parser = HocrParser()
         pdf_merger = PyPDF2.PdfMerger()
-
+        
         with tempfile.TemporaryDirectory() as tmpdir:
             for i, (xml, img) in enumerate(zip(xml_output, self.docs)):
                 page_tmpdir = os.path.join(tmpdir, f"{i+1}.pdf")
