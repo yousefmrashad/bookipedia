@@ -16,7 +16,6 @@ from itertools import pairwise
 from math import atan, cos, pi
 from pathlib import Path
 from xml.etree import ElementTree
-from PIL import Image
 
 from pikepdf import Matrix, Name, Rectangle
 from pikepdf.canvas import (
