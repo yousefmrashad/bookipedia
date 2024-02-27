@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import unicodedata
 import zlib
-from importlib.resources import files as package_files
+import os
 
 from pikepdf import (
     Dictionary,
@@ -22,11 +22,14 @@ class EncodableFont(Font):
     def text_encode(self, text: str) -> bytes:
         raise NotImplementedError()
 
+data_path = os.path.dirname(os.path.dirname(__file__))
 
 class GlyphlessFont(EncodableFont):
     CID_TO_GID_DATA = zlib.compress(b"\x00\x01" * 65536)
     GLYPHLESS_FONT_NAME = 'pdf.ttf'
-    GLYPHLESS_FONT = (package_files('ocrmypdf.data') / GLYPHLESS_FONT_NAME).read_bytes()
+    GLYPHLESS_FONT_PATH = os.path.join(data_path, 'data', GLYPHLESS_FONT_NAME)
+    with open(GLYPHLESS_FONT_PATH, 'rb') as font_file:
+        GLYPHLESS_FONT = font_file.read()
     CHAR_ASPECT = 2
 
     def __init__(self):

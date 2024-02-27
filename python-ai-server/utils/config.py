@@ -10,7 +10,7 @@ import numpy as np
 import cv2 as cv
 
 # HOCR
-from hocr import HocrTransform
+from .hocr import HocrTransform
 from pikepdf import Pdf
 
 from xml.etree import ElementTree as ET
