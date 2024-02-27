@@ -109,7 +109,7 @@ class OCR:
             )
 
             # Convert the HOCR and image to PDF
-            pdf = hocr.to_pdf(image = Image.fromarray(img), invisible_text = True)
+            pdf = hocr.to_pdf(image = fromarray(img), invisible_text = True)
             
             # Append the PDF pages to the output document
             pdf_output.pages.extend(pdf.pages)

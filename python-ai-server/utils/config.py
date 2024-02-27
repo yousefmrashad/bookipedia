@@ -15,10 +15,8 @@ from pikepdf import Pdf
 
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
-
-from math import atan, cos, sin
-from typing import Dict, Optional, Tuple
-import re, PIL.Image, pypdf
+import re, pypdf
+from PIL.Image import fromarray
 
 # Langchain
 from langchain_community.document_loaders import PyPDFLoader
