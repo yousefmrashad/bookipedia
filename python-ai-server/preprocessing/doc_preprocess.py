@@ -17,7 +17,7 @@ class Document:
         
         self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
         
-    def to_vectorstore(self, client: WeaviateClient, embedder: Embeddings):
+    def to_vectorstore(self, embedder: Embeddings):
         self.vectorstore = Weaviate.from_documents(self.chunks, embedder)
 
     def preprocess(self):

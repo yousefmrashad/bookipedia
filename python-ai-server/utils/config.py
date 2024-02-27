@@ -10,10 +10,8 @@ import numpy as np
 import cv2 as cv
 
 # HOCR
-from reportlab.lib.colors import black
-from reportlab.lib.units import inch
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen.canvas import Canvas
+from hocr import HocrTransform
+from pikepdf import Pdf
 
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
