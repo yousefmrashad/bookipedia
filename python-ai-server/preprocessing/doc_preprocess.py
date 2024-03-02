@@ -24,7 +24,7 @@ class Document:
             c.metadata['source_id'] = self.doc_id
 
     def generate_embeddings(self, embedder: Embeddings):
-        self.embeddings = embedder.embed_documents(self.chunks)
+        self.embeddings = embedder.embed_documents([chunk.page_content for chunk in self.chunks])
     
     def store_in_db(self):
         objs = list()
