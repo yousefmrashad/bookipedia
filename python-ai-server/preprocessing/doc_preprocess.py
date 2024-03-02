@@ -3,9 +3,13 @@ from utils import *
 # -------------------------------------------------------------------- #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: int):
+    def __init__(self, doc_path: str, doc_id: int, client: WeaviateClient = None):
         self.doc_path = doc_path
         self.doc_id = doc_id
+        if client:
+            self.client = client
+        else:
+            self.client = weaviate.connect_to_local()
     
     def load_and_split(self, chunk_size=CHUNCK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
 
@@ -16,9 +20,26 @@ class Document:
                                                     is_separator_regex=True)
         
         self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
-        
-    def to_vectorstore(self, embedder: Embeddings):
-        self.vectorstore = Weaviate.from_documents(self.chunks, embedder)
+        for c in self.chunks:
+            c.metadata['source_id'] = self.doc_id
+
+    def generate_embeddings(self, embedder: Embeddings):
+        self.embeddings = embedder.embed_documents(self.chunks)
+    
+    def store_in_db(self):
+        objs = list()
+        for i, c in enumerate(self.chunks):
+            objs.append(classes.data.DataObject(
+                properties={
+                    "source_id": c.metadata["source_id"],
+                    "page_no": c.metadata["page"],
+                    "text": c.page_content
+                },
+                vector=self.embeddings[i]
+            ))
+
+        questions = self.client.collections.get("Chunks")
+        questions.data.insert_many(objs)    # This uses batching under the hood
 
     def preprocess(self):
         self.load_and_split()

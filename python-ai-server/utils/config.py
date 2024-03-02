@@ -25,7 +25,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.embeddings import Embeddings
 from angle_emb import AnglE, Prompts
 from langchain_community.vectorstores.weaviate import Weaviate
-from weaviate import Client as WeaviateClient
+import weaviate
+from weaviate import WeaviateClient, classes
 
 # OpenAI
 import tiktoken
