@@ -15,8 +15,8 @@ class AnglEEmbedding(Embeddings):
 
     def embed_documents(self, texts):
         texts = [{"text": text} for text in texts] if (self.prompt) else texts
-        return self.model.encode(texts)
+        return self.model.encode(texts).tolist()
 
     def embed_query(self, text):
         text = {"text": text} if (self.prompt) else text
-        return self.model.encode(text).squeeze()
+        return self.model.encode(text).squeeze().tolist()

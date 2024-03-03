@@ -12,7 +12,6 @@ import cv2 as cv
 # HOCR
 from .hocr import HocrTransform
 from pikepdf import Pdf
-
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
 import re, pypdf
