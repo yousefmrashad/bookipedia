@@ -13,7 +13,9 @@ def to_docs(response: QueryReturn) -> list[Document]:
         mets = {key: value for key, value in o.properties.items() if key != 'text'}
         if o.metadata.distance is not None:
             distance = o.metadata.distance
-        docs.append((Document(page_content=text, metadata=mets), distance))
+            docs.append((Document(page_content=text, metadata=mets), distance))
+        else:
+            docs.append(Document(page_content=text, metadata=mets))
     return docs
 
 def sim_search(
