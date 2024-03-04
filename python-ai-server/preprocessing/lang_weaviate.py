@@ -4,6 +4,7 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_community.vectorstores.utils import maximal_marginal_relevance
 from weaviate.collections.classes.internal import QueryReturn
+from langchain.vectorstores import VectorStore
 import numpy as np
 
 def to_docs(response: QueryReturn) -> list[Document]:
@@ -31,8 +32,7 @@ def sim_search(
     response = collection.query.near_vector(
     near_vector=query_emb,
     filters=filters,
-    limit=k,
-    return_properties=["text", "source_id", "page_no"]
+    limit=k
     )
     docs = to_docs(response)
     return docs
@@ -52,8 +52,7 @@ def sim_search_score(
     near_vector=query_emb,
     filters=filters,
     limit=k,
-    return_metadata=wvc.query.MetadataQuery(distance=True),
-    return_properties=["text", "source_id", "page_no"]
+    return_metadata=wvc.query.MetadataQuery(distance=True)
     )
 
     docs = to_docs(response)
@@ -79,7 +78,6 @@ def mmr_search(
     filters=filters,
     limit=fetch_k,
     return_metadata=wvc.query.MetadataQuery(distance=True),
-    return_properties=["text", "source_id", "page_no"],
     include_vector= True
     )
     embeddings = [o.vector['default'] for o in response.objects]
