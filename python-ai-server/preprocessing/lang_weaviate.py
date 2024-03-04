@@ -3,9 +3,10 @@ from weaviate import WeaviateClient
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_community.vectorstores.utils import maximal_marginal_relevance
+from weaviate.collections.classes.internal import QueryReturn
 import numpy as np
 
-def to_docs(response) -> list[Document]:
+def to_docs(response: QueryReturn) -> list[Document]:
     docs = []
     for o in response.objects:
         text = o.properties['text']
