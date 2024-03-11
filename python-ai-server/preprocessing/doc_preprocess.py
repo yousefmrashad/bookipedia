@@ -20,6 +20,7 @@ class Document:
                                                     is_separator_regex=True)
         
         self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
+        
         for c in self.chunks:
             c.metadata['source_id'] = self.doc_id
 
