@@ -3,7 +3,7 @@ from utils import *
 # -------------------------------------------------------------------- #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: int, client: WeaviateClient = None):
+    def __init__(self, doc_path: str, doc_id: str, client: WeaviateClient = None):
         self.doc_path = doc_path
         self.doc_id = doc_id
         if client:
