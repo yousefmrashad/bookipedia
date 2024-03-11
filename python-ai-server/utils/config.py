@@ -12,7 +12,6 @@ import cv2 as cv
 # HOCR
 from .hocr import HocrTransform
 from pikepdf import Pdf
-
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
 import re, pypdf
@@ -25,7 +24,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.embeddings import Embeddings
 from angle_emb import AnglE, Prompts
 from langchain_community.vectorstores.weaviate import Weaviate
-from weaviate import Client as WeaviateClient
+import weaviate
+from weaviate import WeaviateClient, classes
 
 # OpenAI
 import tiktoken
@@ -40,7 +40,7 @@ RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 # Document Load
 CHUNCK_SIZE = 256
 CHUNK_OVERLAP = 32
-SEPARATORS = ["(?<=\w{2}\.\s)", "\n"]
+SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
 # Embedding Model
 EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
