@@ -11,7 +11,7 @@ class Document:
         else:
             self.client = weaviate.connect_to_local()
     
-    def load_and_split(self, chunk_size=CHUNCK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
+    def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size,
                                                     chunk_overlap=chunk_overlap,
@@ -28,19 +28,23 @@ class Document:
         self.embeddings = embedder.embed_documents([chunk.page_content for chunk in self.chunks])
     
     def store_in_db(self):
-        objs = list()
+        cls = self.client.collections.get("am_chunks")
+        fours = 0 
+        sixteens = 0
         for i, c in enumerate(self.chunks):
-            objs.append(classes.data.DataObject(
+            if i != 0 and i % 4 == 0:
+                fours += 1
+            if i != 0 and i % 16 == 0:
+                sixteens += 1
+            cls.data.insert(
                 properties={
                     "source_id": c.metadata["source_id"],
-                    "page_no": c.metadata["page"],
-                    "text": c.page_content
+                    "page_no": c.metadata["page"] + 1,
+                    "text": c.page_content,
+                    "child": fours,
+                    "parent": sixteens
                 },
-                vector=self.embeddings[i]
-            ))
-
-        collection = self.client.collections.get("Chunks")
-        collection.data.insert_many(objs)    # This uses batching under the hood
+                vector=self.embeddings[i]) 
 
     def preprocess(self):
         self.load_and_split()
