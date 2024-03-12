@@ -42,7 +42,7 @@ def sim_search_score(
         emb: Embeddings,
         query: str,
         k: int = 5,
-        source_ids: list = None) -> list[Document]:
+        source_ids: list = None) -> list[tuple[Document, float]]:
     collection = client.collections.get("Chunks") 
     query_emb = emb.embed_query(query)
 
