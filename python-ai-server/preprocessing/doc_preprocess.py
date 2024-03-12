@@ -39,8 +39,8 @@ class Document:
                 vector=self.embeddings[i]
             ))
 
-        questions = self.client.collections.get("Chunks")
-        questions.data.insert_many(objs)    # This uses batching under the hood
+        collection = self.client.collections.get("Chunks")
+        collection.data.insert_many(objs)    # This uses batching under the hood
 
     def preprocess(self):
         self.load_and_split()
