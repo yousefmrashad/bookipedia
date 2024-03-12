@@ -3,11 +3,11 @@ from weaviate import WeaviateClient
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_community.vectorstores.utils import maximal_marginal_relevance
-from weaviate.collections.classes.internal import QueryReturn
+from weaviate.collections.classes.internal import QueryReturn, ReturnProperties
 from langchain.vectorstores import VectorStore
 import numpy as np
 
-def to_docs(response: QueryReturn) -> list[Document]:
+def to_docs(response: QueryReturn[ReturnProperties, None]) -> list[Document]:
     docs = []
     for o in response.objects:
         text = o.properties['text']
@@ -24,15 +24,18 @@ def sim_search(
         emb: Embeddings,
         query: str,
         k: int = 5,
+        alpha: float = 0.5,
         source_ids: list = None) -> list[Document]:
     collection = client.collections.get("Chunks") 
     query_emb = emb.embed_query(query)
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
-    response = collection.query.near_vector(
-    near_vector=query_emb,
+    response = collection.query.hybrid(
+    query= query,
+    vector= query_emb,
     filters=filters,
-    limit=k
+    limit=k,
+    alpha=alpha
     )
     docs = to_docs(response)
     return docs
@@ -42,16 +45,19 @@ def sim_search_score(
         emb: Embeddings,
         query: str,
         k: int = 5,
+        alpha: float = 0.5,
         source_ids: list = None) -> list[tuple[Document, float]]:
     collection = client.collections.get("Chunks") 
     query_emb = emb.embed_query(query)
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
 
-    response = collection.query.near_vector(
-    near_vector=query_emb,
+    response = collection.query.hybrid(
+    query= query,
+    vector= query_emb,
     filters=filters,
     limit=k,
+    alpha=alpha,
     return_metadata=wvc.query.MetadataQuery(distance=True)
     )
 
@@ -64,6 +70,7 @@ def mmr_search(
         query: str,
         source_ids: list = None,
         k: int = 5,
+        alpha: float = 0.5,
         fetch_k: int = 20,
         lambda_mult: float = 0.5) -> list[Document]:
     
@@ -73,10 +80,12 @@ def mmr_search(
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
 
-    response = collection.query.near_vector(
-    near_vector=query_emb,
+    response = collection.query.hybrid(
+    query= query,
+    vector= query_emb,
     filters=filters,
     limit=fetch_k,
+    alpha=alpha,
     return_metadata=wvc.query.MetadataQuery(distance=True),
     include_vector= True
     )
