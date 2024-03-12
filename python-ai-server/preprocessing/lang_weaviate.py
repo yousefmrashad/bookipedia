@@ -91,3 +91,13 @@ def mmr_search(
         meta = {key: value for key, value in response.objects[idx].properties.items() if key != 'text'}
         docs.append(Document(page_content=text, metadata=meta))
     return docs
+
+def delete(client: WeaviateClient, ids: list[str] = None) -> None:
+    collection = client.collections.get("Chunks")
+    if ids:
+        collection.data.delete_many(
+        where=wvc.query.Filter.by_id().contains_any(ids)  # Delete the 3 objects
+    )
+    else:
+        raise ValueError("No ids provided to delete.")
+    return None
