@@ -38,46 +38,25 @@ def rerank_docs(
 def merger(client:WeaviateClient, response: QueryReturn[ReturnProperties, None]):
     cls = client.collections.get("am_chunks")
 
-    child = []
-    parent = []
-    for o in response.objects:
-        child.append(o.properties['child'])
-        parent.append(o.properties['parent'])
-    
-    child_counter = Counter(child)
-    parent_counter = Counter(parent)
+    child_counter = Counter(obj.properties['child'] for obj in response.objects)
+    parent_counter = Counter(obj.properties['parent'] for obj in response.objects)
 
-    child_merge = []
-    parent_merge = []
-    leaf = []
+    child_merge = [key for key, value in child_counter.items() if value >= 3]
+    parent_merge = [key for key, value in parent_counter.items() if value >= 9]
+    leaf = [key for key, value in child_counter.items() if value < 3]
 
-    for key, value in child_counter.items():
-        if value >= 3:
-            child_merge.append(key)
-        else:
-            leaf.append(key)
-    for key, value in parent_counter.items():
-        if value >= 9:
-            parent_merge.append(key)
+    child_merge = [c for c in child_merge if all(c not in range(p*4, (p+1)*4) for p in parent_merge)]
 
-    for p in parent_merge:
-        for c in range(p*4, (p+1)*4):
-            if c in child_merge:
-                child_merge.remove(c)
+    leaves = [obj for obj in response.objects if obj.properties['child'] in leaf]
 
-    leaves = []
-    for o in response.objects:
-        if o.properties['child'] in leaf:
-            leaves.append(o)
             
-    if len(parent_merge) != 0:      
-        parents = cls.query.fetch_objects(filters= wvc.query.Filter.by_property("parent").contains_any(parent_merge))
-    else:
-        parents = None
-    if len(child_merge) != 0:    
-        children = cls.query.fetch_objects(filters= wvc.query.Filter.by_property("child").contains_any(child_merge))
-    else:
-        children = None
+    parents = None
+    if parent_merge:
+        parents = cls.query.fetch_objects(filters=wvc.query.Filter.by_property("parent").contains_any(parent_merge))
+
+    children = None
+    if child_merge:
+        children = cls.query.fetch_objects(filters=wvc.query.Filter.by_property("child").contains_any(child_merge))
 
     return parents, children, leaves
 
