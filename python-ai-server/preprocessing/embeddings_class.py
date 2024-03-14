@@ -1,6 +1,7 @@
+# Utils
 from utils_config import *
 from utils import *
-# -------------------------------------------------------------------- #
+# ================================================== #
 
 # AnglEEmbedding Model
 class AnglEEmbedding(Embeddings):
@@ -20,3 +21,4 @@ class AnglEEmbedding(Embeddings):
     def embed_query(self, text):
         text = {"text": text} if (self.prompt) else text
         return self.model.encode(text).squeeze().tolist()
+# -------------------------------------------------- #
