@@ -1,2 +1,2 @@
-from .config import *
-from .functions import *
+from utils.config import *
+from utils.functions import *
