@@ -39,9 +39,11 @@ def sim_search(
     limit=k,
     alpha=alpha
     )
-
+    
+    docs = []
     if auto_merge:
-        docs = merger_to_docs(client, response)
+        for source_id in source_ids:
+            docs.extend(merger_to_docs(client, response, source_id))
     else:
         docs = to_docs(response)
     return docs

@@ -35,7 +35,11 @@ def rerank_docs(
         sorted_docs = [docs[i] for i in sorted_indices]
     return sorted_docs[: top_k]
 
-def merger(client:WeaviateClient, response: QueryReturn[ReturnProperties, None]):
+def merger(
+        client:WeaviateClient,
+        response: QueryReturn[ReturnProperties, None],
+        source_id: str = None
+        ):
     cls = client.collections.get("am_chunks")
 
     child_counter = Counter(obj.properties['child'] for obj in response.objects)
@@ -52,11 +56,15 @@ def merger(client:WeaviateClient, response: QueryReturn[ReturnProperties, None])
             
     parents = None
     if parent_merge:
-        parents = cls.query.fetch_objects(filters=wvc.query.Filter.by_property("parent").contains_any(parent_merge))
+        parents = cls.query.fetch_objects(
+            filters=wvc.query.Filter.by_property("parent").contains_any(parent_merge) &
+            wvc.query.Filter.by_property("source_id").equal(source_id))
 
     children = None
     if child_merge:
-        children = cls.query.fetch_objects(filters=wvc.query.Filter.by_property("child").contains_any(child_merge))
+        children = cls.query.fetch_objects(
+            filters=wvc.query.Filter.by_property("child").contains_any(child_merge) &
+            wvc.query.Filter.by_property("source_id").equal(source_id))
 
     return parents, children, leaves
 
@@ -71,8 +79,12 @@ def parent_to_dict(response: QueryReturn[ReturnProperties, None]) -> dict:
             parent_dict[key] = {'text': o.properties['text'], 'metadata': mets} 
     return parent_dict
 
-def merger_to_docs(client:WeaviateClient, response: QueryReturn[ReturnProperties, None]) -> list[Document]:
-    parents, children, leaves = merger(client, response)
+def merger_to_docs(
+        client:WeaviateClient,
+        response: QueryReturn[ReturnProperties, None],
+        source_id: str = None,
+        ) -> list[Document]:
+    parents, children, leaves = merger(client, response, source_id)
     docs = []
     
     if parents is not None:
