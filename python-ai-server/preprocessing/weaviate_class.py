@@ -1,12 +1,21 @@
 # Utils
 from utils_config import *
 from utils import *
+from typing import Any, List, Iterable
 # ================================================== #
 
 class Weaviate(VectorStore):
     def __init__(self, client: WeaviateClient, embedder: Embeddings) -> None:
         self.client = client
         self.embedder = embedder
+    # -------------------------------------------------- #
+    
+    def add_texts(self, texts: Iterable[str], metadatas: List[dict] | None = None, **kwargs: Any) -> List[str]:
+        return 
+    # -------------------------------------------------- #
+
+    def from_texts(self, texts: Iterable[str], metadatas: List[dict] | None = None, **kwargs: Any) -> List[Document]:
+        return
     # -------------------------------------------------- #
 
     def to_docs(self, response: QueryReturn[ReturnProperties, None]) -> list[Document]:
