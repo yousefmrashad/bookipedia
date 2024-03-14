@@ -12,7 +12,7 @@ def to_docs(response: QueryReturn[ReturnProperties, None]) -> list[Document]:
     docs = []
     for o in response.objects:
         text = o.properties['text']
-        mets = {key: value for key, value in o.properties.items() if key != 'text'}
+        mets = {key: value for key, value in o.properties.items() if key == 'source_id' or key == 'page_no'}
         if o.metadata.distance is not None:
             distance = o.metadata.distance
             docs.append((Document(page_content=text, metadata=mets), distance))
