@@ -41,9 +41,11 @@ def sim_search(
     )
     
     docs = []
-    if auto_merge:
+    if source_ids is not None and auto_merge:
         for source_id in source_ids:
             docs.extend(merger_to_docs(client, response, source_id))
+    elif source_ids is None and auto_merge:
+        docs.extend(merger_to_docs(client, response))
     else:
         docs = to_docs(response)
     return docs

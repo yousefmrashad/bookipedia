@@ -53,18 +53,19 @@ def merger(
 
     leaves = [obj for obj in response.objects if obj.properties['child'] in leaf]
 
-            
+    source_id_filter = wvc.query.Filter.by_property("source_id").equal(source_id) if source_id else None
+
     parents = None
     if parent_merge:
         parents = cls.query.fetch_objects(
             filters=wvc.query.Filter.by_property("parent").contains_any(parent_merge) &
-            wvc.query.Filter.by_property("source_id").equal(source_id))
+            source_id_filter)
 
     children = None
     if child_merge:
         children = cls.query.fetch_objects(
             filters=wvc.query.Filter.by_property("child").contains_any(child_merge) &
-            wvc.query.Filter.by_property("source_id").equal(source_id))
+            source_id_filter)
 
     return parents, children, leaves
 
