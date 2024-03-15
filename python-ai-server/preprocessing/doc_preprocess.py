@@ -3,13 +3,9 @@ from utils import *
 # -------------------------------------------------------------------- #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: str, client: WeaviateClient = None):
+    def __init__(self, doc_path: str, doc_id: str):
         self.doc_path = doc_path
         self.doc_id = doc_id
-        if client:
-            self.client = client
-        else:
-            self.client = weaviate.connect_to_local()
     
     def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
 
@@ -27,8 +23,11 @@ class Document:
     def generate_embeddings(self, embedder: Embeddings):
         self.embeddings = embedder.embed_documents([chunk.page_content for chunk in self.chunks])
     
-    def store_in_db(self):
-        cls = self.client.collections.get("am_chunks")
+    def store_in_db(self, client: WeaviateClient = None):
+        if client is None:
+            client = weaviate.connect_to_local()
+        
+        cls = client.collections.get("am_chunks")
         fours = 0 
         sixteens = 0
         for i, c in enumerate(self.chunks):
