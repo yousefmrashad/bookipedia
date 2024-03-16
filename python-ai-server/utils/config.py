@@ -19,7 +19,7 @@ from pikepdf import Pdf
 import re, pypdf
 
 # Langchain
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
@@ -49,7 +49,7 @@ DETECTION_MODEL = "db_mobilenet_v3_large"
 RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
-CHUNCK_SIZE = 128
+CHUNK_SIZE = 128
 CHUNK_OVERLAP = 32
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
