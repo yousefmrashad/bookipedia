@@ -1,4 +1,4 @@
 __pycache__
 python-ai-server/env
 python-ai-server/test.ipynb
-python-ai-server/utils_config.py
+python-ai-server/root_config.py
