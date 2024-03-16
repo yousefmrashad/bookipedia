@@ -1,5 +1,6 @@
 # Config
-from .config import *
+from root_config import *
+from utils.config import *
 # ================================================== #
 
 # -- Helpers -- #

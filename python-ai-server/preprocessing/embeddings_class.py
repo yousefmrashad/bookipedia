@@ -1,6 +1,6 @@
 # Utils
-from utils_config import *
-from utils import *
+from root_config import *
+from utils.init import *
 # ================================================== #
 
 # AnglEEmbedding Model

@@ -1,34 +1,30 @@
 # Utils
-from utils_config import *
-from utils import *
+from root_config import *
+from utils.init import *
 
 # Modules
-from doc_preprocess import Document
-from embeddings_class import AnglEEmbedding
+from preprocessing.document_class import Document
+from preprocessing.embeddings_class import AnglEEmbedding
 # ================================================== #
 
-doc_path = r""
-doc_id = "بيقولك مرة واحد عنده زهايمر اتاوب ف نسي بوقه مفتوح"
-# -------------------------------------------------- #
+class DocumentPreprocess:
+    def __init__(self, doc_path: str, doc_id: str):
+        self.doc_path = doc_path
+        self.doc_id = doc_id
 
-def get_text_based_document(doc_path: str):
-    pages = pypdf.PdfReader(doc_path).pages
-    for page in pages:
-        if (page.extract_text().strip()):
-            return doc_path
+    def get_text_based_document(self):
+        pages = pypdf.PdfReader(self.doc_path).pages
+        for page in pages:
+            if (page.extract_text().strip()):
+                return
     
-    from ocr import OCR
-    hocr_doc_path = OCR(doc_path).apply_ocr()
+        from preprocessing.ocr import OCR
+        hocr_doc_path = OCR(self.doc_path).apply_ocr()
+        self.doc_path = hocr_doc_path
 
-    return hocr_doc_path
-# -------------------------------------------------- #
-
-# Make sure that the Document is text-based document
-doc_path = get_text_based_document(doc_path)
-
-# Prepare the document
-document = Document(doc_path, doc_id)
-document.load_and_split()
-# document.generate_embeddings(embedder=AnglEEmbedding())
-# document.store_in_db()
+    def preprocess(self, client: WeaviateClient):
+        document = Document(self.doc_path, self.doc_id)
+        document.load_and_split()
+        document.generate_embeddings(embedder=AnglEEmbedding())
+        document.store_in_db(client)
 # -------------------------------------------------- #

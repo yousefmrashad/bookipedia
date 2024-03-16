@@ -5,6 +5,10 @@ os.environ["USE_TORCH"] = "1"
 
 # -- Modules -- #
 
+# Basics
+import torch
+from collections import Counter
+
 # Image Preprocessing
 import numpy as np
 import cv2 as cv
@@ -15,7 +19,7 @@ from pikepdf import Pdf
 import re, pypdf
 
 # Langchain
-from langchain_community.document_loaders import PyPDFLoader
+from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
@@ -26,6 +30,7 @@ import weaviate
 import weaviate.classes as wvc
 from langchain.vectorstores import VectorStore
 from langchain.vectorstores.utils import maximal_marginal_relevance
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 # OpenAI
 import tiktoken
@@ -34,7 +39,7 @@ import tiktoken
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from weaviate import WeaviateClient
-from weaviate.collections.classes.internal import QueryReturn, ReturnProperties
+from weaviate.collections.classes.internal import QueryReturn, Object, ReturnProperties
 # -------------------------------------------------- #
 
 # -- Constants -- #
@@ -44,10 +49,20 @@ DETECTION_MODEL = "db_mobilenet_v3_large"
 RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
-CHUNCK_SIZE = 256
+CHUNCK_SIZE = 128
 CHUNK_OVERLAP = 32
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
+# Auto Merging
+L1 = 4
+L2 = 16
+
 # Embedding Model
 EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
+
+# Re-ranker Model
+RERANKER_MODEL_NAME = "BAAI/bge-reranker-base"
+
+# Database Name
+DB_NAME = "bookipedia"
 # -------------------------------------------------- #
