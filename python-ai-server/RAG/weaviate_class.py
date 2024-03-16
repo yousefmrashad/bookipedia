@@ -114,8 +114,7 @@ class Weaviate(VectorStore):
 
         # Exclude l1 chunks from l2 merged chunks
         l_ratio = L2 // L1 
-        l2_filter_range = [range(c2*l_ratio, (c2+1)*l_ratio) for c2 in l2_chunks_keys]
-        l1_chunks_keys = [c1 for c1 in l1_chunks_keys if all(c1 not in l2_filter_range)]
+        l1_chunks_keys = [c for c in l1_chunks_keys if all(c not in range(p*l_ratio, (p+1)*l_ratio) for p in l2_chunks_keys)]
 
         # Get level 0 chunks
         l0_chunks = [obj for obj in objects if (obj.properties["l1"] in l0_chunks_keys)]
