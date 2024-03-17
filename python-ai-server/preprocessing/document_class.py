@@ -28,24 +28,21 @@ class Document:
     def store_in_db(self, client: WeaviateClient):        
         objs = []
         l1, l2 = (0, 0)
-        for i, chunk in enumerate(self.chunks):
-            if (i != 0) and (i % L1 == 0): l1 += 1
-            if (i != 0) and (i % L2 == 0): l2 += 1
-
-            properties = {
-                "source_id": chunk.metadata["source_id"],
-                "page_no": chunk.metadata["page"]+1,
-                "text": chunk.page_content,
-                "l1": l1,
-                "l2": l2
-            }
-            obj = weaviate.classes.data.DataObject(properties, vector=self.embeddings[i])
-            objs.append(obj)
-        
         # Check if source id already exists
         collection = client.collections.get(DB_NAME)
         exsit_filter = wvc.query.Filter.by_property("source_id").equal(self.doc_id)
+        
         if (len((collection.query.fetch_objects(filters=exsit_filter, limit=1).objects)) == 0):
-            collection.data.insert_many(objs)
-            print("inserted")
+            for i, chunk in enumerate(self.chunks):
+                if (i != 0) and (i % L1 == 0): l1 += 1
+                if (i != 0) and (i % L2 == 0): l2 += 1
+                collection.data.insert(
+                properties = {
+                    "source_id": chunk.metadata["source_id"],
+                    "page_no": chunk.metadata["page"]+1,
+                    "text": chunk.page_content,
+                    "l1": l1,
+                    "l2": l2
+                },
+                vector=self.embeddings[i])
     # -------------------------------------------------- #
