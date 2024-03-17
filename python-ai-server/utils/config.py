@@ -56,7 +56,7 @@ SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 # Auto Merging
 L1 = 4
 L2 = 16
-
+FETCHING_LIMIT = 1024
 # Embedding Model
 EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
 
