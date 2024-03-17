@@ -130,7 +130,7 @@ class Weaviate(VectorStore):
         # Get level 2 chunks
         if (l2_chunks_keys):
             l2_filters = wvc.query.Filter.by_property("l2").contains_any(l2_chunks_keys) & source_id_filter
-            l2_chunks = self.collection.query.fetch_objects(filters=l2_filters)
+            l2_chunks = self.collection.query.fetch_objects(filters=l2_filters).objects
             l2_chunks = self.merge_chunks(l2_chunks, l="l2")
         else:
             l2_chunks = []
