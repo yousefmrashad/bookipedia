@@ -28,7 +28,7 @@ from angle_emb import AnglE, Prompts
 # Weaviate Class
 import weaviate
 import weaviate.classes as wvc
-from langchain.vectorstores import VectorStore
+from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.vectorstores.utils import maximal_marginal_relevance
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
