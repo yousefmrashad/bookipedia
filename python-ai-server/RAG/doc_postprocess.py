@@ -40,10 +40,10 @@ def merger(
         response: QueryReturn[ReturnProperties, None],
         source_id: str = None
         ):
-    cls = client.collections.get("am_chunks")
+    cls = client.collections.get("bookipedia")
 
-    child_counter = Counter(obj.properties['child'] for obj in response.objects)
-    parent_counter = Counter(obj.properties['parent'] for obj in response.objects)
+    child_counter = Counter(obj.properties["l1"] for obj in response.objects)
+    parent_counter = Counter(obj.properties["l2"] for obj in response.objects)
 
     child_merge = [key for key, value in child_counter.items() if value >= 3]
     parent_merge = [key for key, value in parent_counter.items() if value >= 9]
@@ -51,20 +51,20 @@ def merger(
 
     child_merge = [c for c in child_merge if all(c not in range(p*4, (p+1)*4) for p in parent_merge)]
 
-    leaves = [obj for obj in response.objects if obj.properties['child'] in leaf]
+    leaves = [obj for obj in response.objects if obj.properties["l1"] in leaf]
 
     source_id_filter = wvc.query.Filter.by_property("source_id").equal(source_id) if source_id else None
 
     parents = None
     if parent_merge:
         parents = cls.query.fetch_objects(
-            filters=wvc.query.Filter.by_property("parent").contains_any(parent_merge) &
+            filters=wvc.query.Filter.by_property("l2").contains_any(parent_merge) &
             source_id_filter)
 
     children = None
     if child_merge:
         children = cls.query.fetch_objects(
-            filters=wvc.query.Filter.by_property("child").contains_any(child_merge) &
+            filters=wvc.query.Filter.by_property("l1").contains_any(child_merge) &
             source_id_filter)
 
     return parents, children, leaves
@@ -72,7 +72,7 @@ def merger(
 def parent_to_dict(response: QueryReturn[ReturnProperties, None]) -> dict:
     parent_dict = {}
     for o in response.objects:
-        key = o.properties['parent']
+        key = o.properties["l2"]
         if key in parent_dict:
             parent_dict[key]['text'] += (' ' + o.properties['text'])
         else:

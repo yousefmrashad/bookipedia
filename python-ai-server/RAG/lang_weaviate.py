@@ -6,7 +6,7 @@ from langchain_community.vectorstores.utils import maximal_marginal_relevance
 from weaviate.collections.classes.internal import QueryReturn, ReturnProperties
 from langchain.vectorstores import VectorStore
 import numpy as np
-from doc_postprocess import merger_to_docs
+from RAG.doc_postprocess import merger_to_docs
 
 def to_docs(response: QueryReturn[ReturnProperties, None]) -> list[Document]:
     docs = []
@@ -28,7 +28,7 @@ def sim_search(
         alpha: float = 0.5,
         source_ids: list = None,
         auto_merge: bool = False) -> list[Document]:
-    collection = client.collections.get("am_chunks") 
+    collection = client.collections.get("bookipedia") 
     query_emb = emb.embed_query(query)
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
@@ -57,7 +57,7 @@ def sim_search_score(
         k: int = 5,
         alpha: float = 0.5,
         source_ids: list = None) -> list[tuple[Document, float]]:
-    collection = client.collections.get("am_chunks") 
+    collection = client.collections.get("bookipedia") 
     query_emb = emb.embed_query(query)
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
@@ -85,7 +85,7 @@ def mmr_search(
         lambda_mult: float = 0.5) -> list[Document]:
     
 
-    collection = client.collections.get("am_chunks") 
+    collection = client.collections.get("bookipedia") 
     query_emb = emb.embed_query(query)
 
     filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids) if source_ids else None
@@ -112,7 +112,7 @@ def mmr_search(
     return docs
 
 def delete(client: WeaviateClient, ids: list[str] = None) -> None:
-    collection = client.collections.get("am_chunks")
+    collection = client.collections.get("bookipedia")
     if ids:
         collection.data.delete_many(
         where=wvc.query.Filter.by_id().contains_any(ids)  # Delete the 3 objects
