@@ -27,17 +27,18 @@ class Weaviate(VectorStore):
     def similarity_search(self, query: str, source_ids: list, auto_merge=False, k=5, alpha=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
-        filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids)
-        response = self.collection.query.hybrid(query=query, vector=query_emb,
-                                                filters=filters, limit=k, alpha=alpha)
+        objects = self.collection.query.hybrid(query=query, vector=query_emb,
+                                                filters=ids_filter(source_ids),
+                                                limit=k, alpha=alpha).objects
+        objects = sorted(objects, key=lambda obj: obj.properties["index"])
         
         if (auto_merge):
             merged_objects = []
             for source_id in source_ids:
-                merged_objects.extend(self.auto_merge(response.objects, source_id))
+                merged_objects.extend(self.auto_merge(objects, source_id))
             docs = self.objects_to_docs(merged_objects)
         else:
-            docs = self.objects_to_docs(response.objects)
+            docs = self.objects_to_docs(objects)
 
         return docs
     # -------------------------------------------------- #
@@ -45,12 +46,13 @@ class Weaviate(VectorStore):
     def similarity_search_with_score(self, query: str, source_ids: list, k=5, alpha=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
-        filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids)
-        response = self.collection.query.hybrid(query=query, vector=query_emb, filters=filters,
+        objects = self.collection.query.hybrid(query=query, vector=query_emb,
+                                                filters=ids_filter(source_ids),
                                                 limit=k, alpha=alpha,
-                                                return_metadata=wvc.query.MetadataQuery(score=True))
-        # print(response.objects)
-        docs = self.objects_to_docs(response.objects)
+                                                return_metadata=wvc.query.MetadataQuery(score=True)).objects
+        objects = sorted(objects, key=lambda obj: obj.properties["index"])
+        
+        docs = self.objects_to_docs(objects)
 
         return docs
     # -------------------------------------------------- #
@@ -58,22 +60,24 @@ class Weaviate(VectorStore):
     def max_marginal_relevance_search(self, query: str, source_ids: list, k=5, alpha=0.5, fetch_k=20, lambda_mult=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
-        filters = wvc.query.Filter.by_property("source_id").contains_any(source_ids)
-        response = self.collection.query.hybrid(query=query, vector=query_emb, filters=filters, limit=fetch_k,
-                                            alpha=alpha, return_metadata=wvc.query.MetadataQuery(distance=True),
-                                            include_vector= True)
+        objects = self.collection.query.hybrid(query=query, vector=query_emb,
+                                                filters=ids_filter(source_ids),
+                                                limit=fetch_k, alpha=alpha,
+                                                return_metadata=wvc.query.MetadataQuery(distance=True),
+                                                include_vector= True).objects
+        objects = sorted(objects, key=lambda obj: obj.properties["index"])
         
-        embeddings = [obj.vector["default"] for obj in response.objects]
+        embeddings = [obj.vector["default"] for obj in objects]
         mmr_selected = maximal_marginal_relevance(np.array(query_emb), embeddings, k=k, lambda_mult=lambda_mult)
 
-        objects = [response.objects[i] for i in mmr_selected]
+        objects = [objects[i] for i in mmr_selected]
         docs = self.objects_to_docs(objects)
 
         return docs
     # -------------------------------------------------- #
     
     def delete(self, source_id: str):
-        self.collection.data.delete_many(where=wvc.query.Filter.by_property("source_id").equal(source_id))
+        self.collection.data.delete_many(where=id_filter(source_id))
     # -------------------------------------------------- #
     
     # -- Advanced Methods -- #
@@ -101,7 +105,7 @@ class Weaviate(VectorStore):
 
     # Auto-Merge
     def auto_merge(self, objects: list[Object], source_id: str) -> list[Object]:
-        source_id_filter = wvc.query.Filter.by_property("source_id").equal(source_id)
+        source_id_filter = id_filter(source_id)
 
         # Count retrieved level 1 & level 2 number
         l1_count = Counter(obj.properties["l1"] for obj in objects)
@@ -122,7 +126,7 @@ class Weaviate(VectorStore):
         # Get level 1 chunks
         if (l1_chunks_keys):
             l1_filters = wvc.query.Filter.by_property("l1").contains_any(l1_chunks_keys) & source_id_filter
-            l1_chunks = self.collection.query.fetch_objects(filters=l1_filters, limit=FETCHING_LIMIT).objects
+            l1_chunks = self.collection.query.fetch_objects(filters=l1_filters, limit=FETCHING_LIMIT, sort=SORT).objects
             l1_chunks = self.merge_chunks(l1_chunks, l="l1")
         else:
             l1_chunks = []
@@ -130,7 +134,7 @@ class Weaviate(VectorStore):
         # Get level 2 chunks
         if (l2_chunks_keys):
             l2_filters = wvc.query.Filter.by_property("l2").contains_any(l2_chunks_keys) & source_id_filter
-            l2_chunks = self.collection.query.fetch_objects(filters=l2_filters, limit = FETCHING_LIMIT).objects
+            l2_chunks = self.collection.query.fetch_objects(filters=l2_filters, limit=FETCHING_LIMIT, sort=SORT).objects
             l2_chunks = self.merge_chunks(l2_chunks, l="l2")
         else:
             l2_chunks = []
@@ -162,72 +166,21 @@ class Weaviate(VectorStore):
         return chunks_objects
     # -------------------------------------------------- #
 
-    # -- Abstract Methods -- #
-    def add_texts(self, texts, metadatas=None, **kwargs): return
-    def from_texts(cls, texts, embedding, metadatas=None, **kwargs): return
-    # -------------------------------------------------- #
-
+    # -- Retriever Methods -- #
     def _get_retriever_tags(self) -> list[str]:
-        """Get tags for retriever."""
         tags = [self.__class__.__name__]
         if self.embeddings:
             tags.append(self.embeddings.__class__.__name__)
         return tags
+    # -------------------------------------------------- #
 
     def as_retriever(self, **kwargs) -> VectorStoreRetriever:
-        """Return VectorStoreRetriever initialized from this VectorStore.
-
-        Args:
-            search_type (Optional[str]): Defines the type of search that
-                the Retriever should perform.
-                Can be "similarity" (default), "mmr", or
-                "similarity_score_threshold".
-            search_kwargs (Optional[Dict]): Keyword arguments to pass to the
-                search function. Can include things like:
-                    k: Amount of documents to return (Default: 4)
-                    score_threshold: Minimum relevance threshold
-                        for similarity_score_threshold
-                    fetch_k: Amount of documents to pass to MMR algorithm (Default: 20)
-                    lambda_mult: Diversity of results returned by MMR;
-                        1 for minimum diversity and 0 for maximum. (Default: 0.5)
-                    filter: Filter by document metadata
-
-        Returns:
-            VectorStoreRetriever: Retriever class for VectorStore.
-
-        Examples:
-
-        .. code-block:: python
-
-            # Retrieve more documents with higher diversity
-            # Useful if your dataset has many similar documents
-            docsearch.as_retriever(
-                search_type="mmr",
-                search_kwargs={'k': 6, 'lambda_mult': 0.25}
-            )
-
-            # Fetch more documents for the MMR algorithm to consider
-            # But only return the top 5
-            docsearch.as_retriever(
-                search_type="mmr",
-                search_kwargs={'k': 5, 'fetch_k': 50}
-            )
-
-            # Only retrieve documents that have a relevance score
-            # Above a certain threshold
-            docsearch.as_retriever(
-                search_type="similarity_score_threshold",
-                search_kwargs={'score_threshold': 0.8}
-            )
-
-            # Only get the single most similar document from the dataset
-            docsearch.as_retriever(search_kwargs={'k': 1})
-
-            # Use a filter to only retrieve documents from a specific paper
-            docsearch.as_retriever(
-                search_kwargs={'filter': {'paper_title':'GPT-4 Technical Report'}}
-            )
-        """
         tags = kwargs.pop("tags", None) or []
         tags.extend(self._get_retriever_tags())
         return VectorStoreRetriever(vectorstore=self, **kwargs, tags=tags)
+    # -------------------------------------------------- #
+    
+    # -- Abstract Methods -- #
+    def add_texts(self, texts, metadatas=None, **kwargs): return
+    def from_texts(cls, texts, embedding, metadatas=None, **kwargs): return
+    # -------------------------------------------------- #
