@@ -83,13 +83,13 @@ class Weaviate(VectorStore):
     # -- Advanced Methods -- #
         
     # Re-rank Results
-    def rerank_docs(self, query: str, docs: list[Document], top_k :int) -> list[Document]:
+    def rerank_docs(self, query: str, docs: list[tuple[Document, float]], top_k :int) -> list[tuple[Document, float]]:
         tokenizer = AutoTokenizer.from_pretrained(RERANKER_MODEL_NAME)
         model = AutoModelForSequenceClassification.from_pretrained(RERANKER_MODEL_NAME)
         model.eval()
 
         # Prepare the query-document pairs for the model
-        pairs = [[query , doc.page_content] for doc in docs]
+        pairs = [[query , doc.page_content] for doc , _ in docs]
         
         # Tokenize the pairs and generate scores
         with torch.no_grad():
