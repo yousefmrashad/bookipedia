@@ -15,3 +15,11 @@ def count_tokens(text: str) -> int:
     encoding = tiktoken.get_encoding("cl100k_base")
     return len(encoding.encode(text))
 # -------------------------------------------------- #
+
+# Retrieving Filters
+def id_filter(source_id: str):
+    return wvc.query.Filter.by_property("source_id").equal(source_id)
+
+def ids_filter(source_ids: list[str]):
+    return wvc.query.Filter.by_property("source_id").contains_any(source_ids)
+# -------------------------------------------------- #
