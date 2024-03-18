@@ -19,7 +19,7 @@ from pikepdf import Pdf
 import re, pypdf
 
 # Langchain
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
@@ -28,6 +28,7 @@ from angle_emb import AnglE, Prompts
 # Weaviate Class
 import weaviate
 import weaviate.classes as wvc
+from weaviate.collections.classes.grpc import Sort
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.vectorstores.utils import maximal_marginal_relevance
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -49,14 +50,18 @@ DETECTION_MODEL = "db_mobilenet_v3_large"
 RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
-CHUNK_SIZE = 128
-CHUNK_OVERLAP = 32
-SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
+CHUNK_SIZE = 256
+CHUNK_OVERLAP = 64
+SEPARATORS = [r"(?<=\w{2}\.\s\n)", r"(?<=\w{2}\.\s)", "\n"]
 
 # Auto Merging
 L1 = 4
 L2 = 16
 FETCHING_LIMIT = 1024
+
+# Retrieving Filters
+SORT = Sort.by_property(name="index", ascending=True)
+
 # Embedding Model
 EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
 
