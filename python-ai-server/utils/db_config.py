@@ -19,6 +19,7 @@ class DB:
             vector_index_config=wvc.config.Configure.VectorIndex.hnsw(distance_metric=wvc.config.VectorDistances.COSINE),
             
             properties = [
+                wvc.config.Property(name="index", data_type=wvc.config.DataType.INT, vectorize_property_name=False),
                 wvc.config.Property(name="source_id", data_type=wvc.config.DataType.TEXT, vectorize_property_name=False),
                 wvc.config.Property(name="page_no", data_type=wvc.config.DataType.INT, vectorize_property_name=False),
                 wvc.config.Property(name="text", data_type=wvc.config.DataType.TEXT, vectorize_property_name=False, tokenization=wvc.config.Tokenization.LOWERCASE),
