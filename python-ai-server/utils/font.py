@@ -22,12 +22,12 @@ class EncodableFont(Font):
     def text_encode(self, text: str) -> bytes:
         raise NotImplementedError()
 
-data_path = os.path.dirname(os.path.dirname(__file__))
+data_path = os.path.dirname(__file__)
 
 class GlyphlessFont(EncodableFont):
     CID_TO_GID_DATA = zlib.compress(b"\x00\x01" * 65536)
     GLYPHLESS_FONT_NAME = 'pdf.ttf'
-    GLYPHLESS_FONT_PATH = os.path.join(data_path, 'data', GLYPHLESS_FONT_NAME)
+    GLYPHLESS_FONT_PATH = os.path.join(data_path, GLYPHLESS_FONT_NAME)
     with open(GLYPHLESS_FONT_PATH, 'rb') as font_file:
         GLYPHLESS_FONT = font_file.read()
     CHAR_ASPECT = 2

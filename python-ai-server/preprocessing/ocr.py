@@ -1,16 +1,20 @@
-from utils_config import *
-from utils import *
+# Utils
+from root_config import *
+from utils.init import *
+from utils.hocr import HocrTransform
+
+# Modules
 from doctr.models import ocr_predictor
 from doctr.io import DocumentFile, Document
-# -------------------------------------------------------------------- #
+# ================================================== #
 
 # OCR
 class OCR:
-    def __init__(self, doc_path: str, scale: int = 5):
+    def __init__(self, doc_path: str, scale=5):
         self.doc_path = doc_path
         self.scale = scale
         self.docs = DocumentFile.from_pdf(doc_path, scale=scale)
-    # -------------------------------------------------------------------- #
+    # -------------------------------------------------- #
 
     @staticmethod
     def filter_image(img: np.ndarray, kernel_size=55, white_point=120, black_point=70) -> np.ndarray:
@@ -49,7 +53,7 @@ class OCR:
         rgb_image = np.stack([sharpened] * 3, axis=-1)
 
         return rgb_image
-    # -------------------------------------------------------------------- #
+    # -------------------------------------------------- #
 
     @staticmethod
     def correct_skew(img: np.ndarray) -> np.ndarray:
@@ -76,57 +80,57 @@ class OCR:
         corrected_image = cv.warpAffine(img, rotation_matrix, (cols, rows), flags=cv.INTER_LINEAR)
 
         return corrected_image
-    # -------------------------------------------------------------------- #
+    # -------------------------------------------------- #
 
     # OCR
     def ocr(self) -> Document:
-        model = ocr_predictor(det_arch=DETECTION_MODEL,
-                            reco_arch=RECOGNITION_MODEL,
-                            assume_straight_pages=True,
-                            pretrained=True,
-                            export_as_straight_boxes=True).cuda()
+        model = ocr_predictor(det_arch=DETECTION_MODEL, reco_arch=RECOGNITION_MODEL,
+                              assume_straight_pages=True, pretrained=True,
+                              export_as_straight_boxes=True).cuda()
         
         result = model.forward(self.docs)
         self.result: Document = result
-    # -------------------------------------------------------------------- #
+    # -------------------------------------------------- #
 
     # HOCR
     def hocr(self):
-        out_filename = self.doc_path.replace('.pdf', '_hocr.pdf')
         # Export OCR results as XML
         xml_outputs = self.result.export_as_xml()
 
         # Create a new PDF document
-        pdf_output = Pdf.new()
+        self.pdf_output = Pdf.new()
 
         # Iterate over each page in the OCR results
         for (xml, img) in zip(xml_outputs, self.docs):
             
             # Create an HocrTransform object
-            hocr = HocrTransform(
-                hocr=xml[1],
-                dpi=360
-            )
+            hocr = HocrTransform(hocr=xml[1], dpi=360)
 
             # Convert the HOCR and image to PDF
-            pdf = hocr.to_pdf(image = fromarray(img), invisible_text = True)
+            pdf = hocr.to_pdf(image = PIL.Image.fromarray(img), invisible_text=True)
             
             # Append the PDF pages to the output document
-            pdf_output.pages.extend(pdf.pages)
-    
-        # Save the output PDF with hOCR format
-        pdf_output.save(out_filename)
+            self.pdf_output.pages.extend(pdf.pages)
+    # -------------------------------------------------- #
 
-        return self.result.export()
-    # -------------------------------------------------------------------- #
+    # Save the output PDF with HOCR format
+    def save_hocr_doc(self):
+        hocr_doc_path = self.doc_path.replace(".pdf", "_hocr.pdf")
+        self.pdf_output.save(hocr_doc_path)
+
+        return hocr_doc_path
+    # -------------------------------------------------- #
 
     # OCR Pipeline
-    def apply_ocr(self, deskew=False, filter = False):
-        if(filter):
+    def apply_ocr(self, deskew=False, filter=False) -> str:
+        if (filter):
             self.docs = [OCR.filter_image(page) for page in self.docs]
-        if(deskew):
+        if (deskew):
             self.docs = [OCR.correct_skew(page) for page in self.docs]
 
         self.ocr()
         self.hocr()
-# -------------------------------------------------------------------- #
+        hocr_doc_path = self.save_hocr_doc()
+        
+        return hocr_doc_path
+    # -------------------------------------------------- #

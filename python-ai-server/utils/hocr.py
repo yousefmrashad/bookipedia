@@ -17,7 +17,7 @@ from math import atan, cos, pi
 from pathlib import Path
 from xml.etree import ElementTree
 
-from pikepdf import Matrix, Name, Rectangle
+from pikepdf import Matrix, Name, Rectangle, Pdf
 from pikepdf.canvas import (
     BLACK,
     BLUE,
@@ -172,7 +172,7 @@ class HocrTransform:
         #out_filename: Path,
         image = None,
         invisible_text: bool = True,
-    ) -> None:
+    ) -> Pdf:
         """Creates a PDF file with an image superimposed on top of the text.
 
         Text is positioned according to the bounding box of the lines in
