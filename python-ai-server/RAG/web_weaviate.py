@@ -3,7 +3,7 @@ from root_config import *
 from utils.init import *
 # ================================================== #
 
-class Weaviate(VectorStore):
+class WebWeaviate(VectorStore):
     def __init__(self, client: WeaviateClient, embedder: Embeddings) -> None:
         self.client = client
         self.embedder = embedder
