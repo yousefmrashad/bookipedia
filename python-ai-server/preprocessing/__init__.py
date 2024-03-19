@@ -1,2 +1,1 @@
-from preprocessing import doc_preprocess, AnglEEmbedding, ocr
-__all__ = ['doc_preprocess', 'AnglEEmbedding', 'ocr']
+__all__ = ['document_class', 'embeddings_class', 'ocr']
