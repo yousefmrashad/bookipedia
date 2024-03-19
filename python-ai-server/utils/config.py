@@ -32,6 +32,7 @@ from weaviate.collections.classes.grpc import Sort
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.vectorstores.utils import maximal_marginal_relevance
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 # OpenAI
 import tiktoken
