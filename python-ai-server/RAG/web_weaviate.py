@@ -7,7 +7,7 @@ class WebWeaviate(VectorStore):
     def __init__(self, client: WeaviateClient, embedder: Embeddings) -> None:
         self.client = client
         self.embedder = embedder
-        self.collection = self.client.collections.create('web_research')
+        self.collection = self.client.collections.get('web_research')
     # -------------------------------------------------- #
         
     # -- Main Methods -- #
@@ -51,8 +51,16 @@ class WebWeaviate(VectorStore):
         return docs
     # -------------------------------------------------- #
     
+    # -- Utility Methods -- #
+
+    # Delete all documents in the collection
     def delete(self):
-        self.client.collections.delete('web_research')
+        response = self.collection.query.fetch_objects(limit=FETCHING_LIMIT, return_properties=[])
+        ids = [o.uuid for o in response.objects]
+
+        self.collection.data.delete_many(
+            where=wvc.query.Filter.by_id().contains_any(ids)
+        )
     # -------------------------------------------------- #
         
     # Response to documents
