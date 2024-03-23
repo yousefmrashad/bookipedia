@@ -19,6 +19,7 @@ class RagPipeline:
         self.llm = ChatOpenAI(model_name="gpt-3.5-turbo-0125", temperature=0, streaming=True, openai_api_key=open_ai_key)
         self.client = DB().connect()
         self.embedding_model = AnglEEmbedding()
+        self.db = Weaviate(self.client, embedder=self.embedding_model)
         self.web_client = weaviate.connect_to_local()
         self.web_db = WebWeaviate(self.web_client, embedder=self.embedding_model)
 
@@ -45,37 +46,32 @@ class RagPipeline:
         return retrieving_query.content
     
 
-    def generate_vecdb_context(self, retrieval_query: str, book_ids: list[str]):
-        # Assuming DB().connect() returns a connection object that can be used directly with Weaviate
-        client = DB().connect()
-        
-        # Initialize Weaviate instance
-        db = Weaviate(client, embedder=self.embedding_model)
-        
-        # Perform similarity search
-        docs = db.similarity_search(query=retrieval_query, source_ids=book_ids)
-        
-        # Use list comprehensions to create content and metadata lists
-        content = [doc.page_content for doc, _ in docs]
-        metadata = [f"book_id: {doc.metadata['source_id']}, page_no: {doc.metadata['page_no']}" for doc, _ in docs]
-        
-        # Ensure the Weaviate instance is properly closed or managed
-        # This is a placeholder. You might need to implement a proper context management or close method
-        # db.close()
-        
-        return content, metadata
-    def generate_web_context(self, retrieval_query: str):
-        # Initialize the retriever
-        retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
-        docs = retriever.get_relevant_documents(retrieval_query)
-        content, metadata = list() ,list()
-
-        for doc in docs:
-            content.append(doc.page_content)
-            metadata.append(doc.metadata['source'])
-        return content, metadata
+    
     
     def generate_context(self, user_prompt: str, chat_summary: str, book_ids: list[str] = None, enable_web_retrieval=True) :
+        
+        def generate_vecdb_context(self, retrieval_query: str, book_ids: list[str]):
+        
+            # TODO: SELECT retrieving algorithm
+            docs = self.db.similarity_search(query=retrieval_query, source_ids=book_ids)
+            
+            # Use list comprehensions to create content and metadata lists
+            content = [doc.page_content for doc, _ in docs]
+            metadata = [f"book_id: {doc.metadata['source_id']}, page_no: {doc.metadata['page_no']}" for doc, _ in docs]
+            return content, metadata
+        
+        def generate_web_context(self, retrieval_query: str):
+            # Initialize the retriever
+            retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
+            docs = retriever.get_relevant_documents(retrieval_query)
+            content, metadata = list() ,list()
+
+            for doc in docs:
+                content.append(doc.page_content)
+                metadata.append(doc.metadata['source'])
+            return content, metadata
+
+        
         #  Generate the retrieval query
         retrieval_query = self.generate_retrieval_query(user_prompt, chat_summary)
         
@@ -87,7 +83,7 @@ class RagPipeline:
         # Optionally generate context from the web (if book_ids are provided)
         web_context , web_metadata = [] , []
         
-        if book_ids:
+        if enable_web_retrieval:
             web_context, web_metadata = self.generate_web_context(retrieval_query)
         
         # Combine the contexts
@@ -122,6 +118,7 @@ class RagPipeline:
         return chat_summary.content
     
     def generate_answer(self, user_prompt: str, chat_summary: str, book_ids: list[str] = None, enable_web_retrieval=True ):
+        
         context, metadata = self.generate_context(user_prompt=user_prompt, chat_summary= chat_summary,
                                                   book_ids= book_ids, enable_web_retrieval= enable_web_retrieval)
         # TODO:
