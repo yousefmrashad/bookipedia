@@ -57,10 +57,10 @@ class WebWeaviate(VectorStore):
     def delete(self):
         response = self.collection.query.fetch_objects(limit=FETCHING_LIMIT, return_properties=[])
         ids = [o.uuid for o in response.objects]
-
-        self.collection.data.delete_many(
-            where=wvc.query.Filter.by_id().contains_any(ids)
-        )
+        if(ids):
+            self.collection.data.delete_many(
+                where=wvc.query.Filter.by_id().contains_any(ids)
+            )
     # -------------------------------------------------- #
         
     # Response to documents

@@ -13,13 +13,17 @@ class Weaviate(VectorStore):
     # -- Main Methods -- #
 
     # Response to documents
-    def objects_to_docs(self, objects: list[Object]) -> list[tuple[Document, float]]:
+    def objects_to_docs(self, objects: list[Object]):
         docs = []
         for obj in objects:
             distance = obj.metadata.distance if (obj.metadata) else None
             text = obj.properties["text"]
             metadata = {"source_id": obj.properties["source_id"], "page_no": obj.properties["page_no"]}
-            docs.append((Document(page_content=text, metadata=metadata), distance))
+            
+            if distance:
+                docs.append((Document(page_content=text, metadata=metadata), distance))
+            else:
+                docs.append(Document(page_content=text, metadata=metadata))
         
         return docs
     # -------------------------------------------------- #
@@ -83,13 +87,13 @@ class Weaviate(VectorStore):
     # -- Advanced Methods -- #
         
     # Re-rank Results
-    def rerank_docs(self, query: str, docs: list[tuple[Document, float]], top_k :int) -> list[tuple[Document, float]]:
+    def rerank_docs(self, query: str, docs: list[Document], top_k :int) -> list[Document]:
         tokenizer = AutoTokenizer.from_pretrained(RERANKER_MODEL_NAME)
         model = AutoModelForSequenceClassification.from_pretrained(RERANKER_MODEL_NAME)
         model.eval()
 
         # Prepare the query-document pairs for the model
-        pairs = [[query , doc.page_content] for doc , _ in docs]
+        pairs = [[query , doc.page_content] for doc in docs]
         
         # Tokenize the pairs and generate scores
         with torch.no_grad():
