@@ -28,7 +28,7 @@ class Weaviate(VectorStore):
         return docs
     # -------------------------------------------------- #
 
-    def similarity_search(self, query: str, source_ids: list, auto_merge=False, k=5, alpha=0.5) -> list[tuple[Document, float]]:
+    def similarity_search(self, query: str, source_ids: list, auto_merge=False, k=5, alpha=0.5) -> list[Document]:
         query_emb = self.embedder.embed_query(query)
 
         objects = self.collection.query.hybrid(query=query, vector=query_emb,
