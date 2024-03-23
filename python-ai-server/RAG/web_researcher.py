@@ -70,8 +70,8 @@ class WebResearchRetriever(BaseRetriever):
         ..., description="Vector store for storing web pages"
     )
     llm_chain: LLMChain
-    search: DuckDuckGoSearchAPIWrapper = Field(..., description="Google Search API Wrapper")
-    num_search_results: int = Field(1, description="Number of pages per Google search")
+    search: DuckDuckGoSearchAPIWrapper = Field(..., description="DuckDuckGo Search API Wrapper")
+    num_search_results: int = Field(1, description="Number of pages per DuckDuckGo search")
     text_splitter: TextSplitter = Field(
         RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=50),
         description="Text splitter for splitting web pages into chunks",
@@ -155,6 +155,7 @@ class WebResearchRetriever(BaseRetriever):
     def _get_relevant_documents(
         self,
         query: str,
+        k: int = 2,
         *,
         run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
