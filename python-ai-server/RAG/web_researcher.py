@@ -210,7 +210,7 @@ class WebResearchRetriever(BaseRetriever):
         logger.info("Grabbing most relevant splits from urls...")
         docs = []
         for query in questions:
-            docs.extend(self.vectorstore.similarity_search(query))
+            docs.extend(self.vectorstore.similarity_search(query, k = k))
 
         # Get unique docs
         unique_documents_dict = {
