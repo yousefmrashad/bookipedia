@@ -73,7 +73,7 @@ class WebResearchRetriever(BaseRetriever):
     search: DuckDuckGoSearchAPIWrapper = Field(..., description="DuckDuckGo Search API Wrapper")
     num_search_results: int = Field(1, description="Number of pages per DuckDuckGo search")
     text_splitter: TextSplitter = Field(
-        RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=50),
+        RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50),
         description="Text splitter for splitting web pages into chunks",
     )
     url_database: List[str] = Field(
@@ -89,7 +89,7 @@ class WebResearchRetriever(BaseRetriever):
         prompt: Optional[BasePromptTemplate] = None,
         num_search_results: int = 1,
         text_splitter: RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter(
-            chunk_size=1500, chunk_overlap=150
+            chunk_size=500, chunk_overlap=50
         ),
     ) -> "WebResearchRetriever":
         """Initialize from llm using default template.
