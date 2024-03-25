@@ -28,7 +28,7 @@ class Weaviate(VectorStore):
         return docs
     # -------------------------------------------------- #
 
-    def similarity_search(self, query: str, source_ids: list, auto_merge=False, k=5, alpha=0.5) -> list[Document]:
+    def similarity_search(self, query: str, source_ids: list, auto_merge =False, k = 10, top_k = 5, alpha=0.5) -> list[Document]:
         query_emb = self.embedder.embed_query(query)
 
         objects = self.collection.query.hybrid(query=query, vector=query_emb,
@@ -41,6 +41,7 @@ class Weaviate(VectorStore):
             for source_id in source_ids:
                 merged_objects.extend(self.auto_merge(objects, source_id))
             docs = self.objects_to_docs(merged_objects)
+            docs = self.rerank_docs(query, docs, top_k)
         else:
             docs = self.objects_to_docs(objects)
 
