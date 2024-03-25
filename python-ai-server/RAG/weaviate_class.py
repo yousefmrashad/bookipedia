@@ -62,7 +62,7 @@ class Weaviate(VectorStore):
         return docs
     # -------------------------------------------------- #
 
-    def max_marginal_relevance_search(self, query: str, source_ids: list, k=5, alpha=0.5, fetch_k=20, lambda_mult=0.5) -> list[tuple[Document, float]]:
+    def max_marginal_relevance_search(self, query: str, source_ids: list, auto_merge = False, k=10, alpha=0.5, fetch_k=20, lambda_mult=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
         objects = self.collection.query.hybrid(query=query, vector=query_emb,
@@ -74,9 +74,14 @@ class Weaviate(VectorStore):
         
         embeddings = [obj.vector["default"] for obj in objects]
         mmr_selected = maximal_marginal_relevance(np.array(query_emb), embeddings, k=k, lambda_mult=lambda_mult)
-
         objects = [objects[i] for i in mmr_selected]
-        docs = self.objects_to_docs(objects)
+
+        if (auto_merge):
+            merged_objects = []
+            for source_id in source_ids:
+                merged_objects.extend(self.auto_merge(objects, source_id))
+                
+        docs = self.objects_to_docs(merged_objects)
 
         return docs
     # -------------------------------------------------- #
