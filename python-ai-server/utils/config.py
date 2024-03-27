@@ -65,6 +65,7 @@ SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
 EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
+RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
 RERANKER_MODEL_NAME = "BAAI/bge-reranker-base"
