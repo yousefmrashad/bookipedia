@@ -10,16 +10,14 @@ class AnglEEmbedding(Embeddings):
         
         self.model = AnglE.from_pretrained(model_name, pooling_strategy=pooling_strategy).cuda()
         self.prompt = prompt
-        
-        if (self.prompt):
-            self.model.set_prompt(prompt=prompt)
 
     def embed_documents(self, texts: list[str]):
-        texts = [{"text": text} for text in texts] if (self.prompt) else texts
+        self.model.set_prompt(None)
         return self.model.encode(texts).tolist()
 
     def embed_query(self, text: str):
-        text = {"text": text} if (self.prompt) else text
+        self.model.set_prompt(prompt=self.prompt)
+        text = {"text": text}
         return self.model.encode(text).squeeze().tolist()
 # -------------------------------------------------- #
     
@@ -32,7 +30,6 @@ class MXBAIEmbedding(Embeddings):
         self.prompt = prompt
 
     def embed_documents(self, texts: list[str]):
-        texts = [text for text in texts]
         return self.model.encode(texts).tolist()
 
     def embed_query(self, text: str):
