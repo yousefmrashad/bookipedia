@@ -13,22 +13,16 @@ class Weaviate(VectorStore):
     # -- Main Methods -- #
 
     # Response to documents
-    def objects_to_docs(self, objects: list[Object]):
+    def objects_to_docs(self, objects: list[Object]) -> list[Document]:
         docs = []
         for obj in objects:
-            distance = obj.metadata.distance if (obj.metadata) else None
             text = obj.properties["text"]
             metadata = {"source_id": obj.properties["source_id"], "page_no": obj.properties["page_no"]}
-            
-            if distance:
-                docs.append((Document(page_content=text, metadata=metadata), distance))
-            else:
-                docs.append(Document(page_content=text, metadata=metadata))
-        
+            docs.append(Document(page_content=text, metadata=metadata))
         return docs
     # -------------------------------------------------- #
 
-    def similarity_search(self, query: str, source_ids: list, auto_merge =False, k = 10, top_k = 5, alpha=0.5) -> list[Document]:
+    def similarity_search(self, query: str, source_ids: list, auto_merge =False, k = 16, top_k = 5, alpha=0.5) -> list[Document]:
         query_emb = self.embedder.embed_query(query)
 
         objects = self.collection.query.hybrid(query=query, vector=query_emb,
@@ -48,7 +42,7 @@ class Weaviate(VectorStore):
         return docs
     # -------------------------------------------------- #
 
-    def similarity_search_with_score(self, query: str, source_ids: list, k=5, alpha=0.5) -> list[tuple[Document, float]]:
+    def similarity_search_with_relevance_scores(self, query: str, source_ids: list, k=5, alpha=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
         objects = self.collection.query.hybrid(query=query, vector=query_emb,
@@ -56,18 +50,20 @@ class Weaviate(VectorStore):
                                                 limit=k, alpha=alpha,
                                                 return_metadata=wvc.query.MetadataQuery(score=True)).objects
         objects = sorted(objects, key=lambda obj: obj.properties["index"])
-        
-        docs = self.objects_to_docs(objects)
 
-        return docs
+        scores = [obj.metadata.score for obj in objects]
+        docs = self.objects_to_docs(objects)
+        docs = zip(docs, scores)
+
+        return list(docs)
     # -------------------------------------------------- #
 
-    def max_marginal_relevance_search(self, query: str, source_ids: list, k=5, alpha=0.5, fetch_k=20, lambda_mult=0.5) -> list[tuple[Document, float]]:
+    def max_marginal_relevance_search(self, query: str, source_ids: list, k=5, fetch_k=20, lambda_mult=0.5) -> list[tuple[Document, float]]:
         query_emb = self.embedder.embed_query(query)
 
-        objects = self.collection.query.hybrid(query=query, vector=query_emb,
+        objects = self.collection.query.near_vector(near_vector=query_emb,
                                                 filters=ids_filter(source_ids),
-                                                limit=fetch_k, alpha=alpha,
+                                                limit=fetch_k,
                                                 return_metadata=wvc.query.MetadataQuery(distance=True),
                                                 include_vector= True).objects
         objects = sorted(objects, key=lambda obj: obj.properties["index"])
@@ -89,23 +85,17 @@ class Weaviate(VectorStore):
         
     # Re-rank Results
     def rerank_docs(self, query: str, docs: list[Document], top_k :int) -> list[Document]:
-        tokenizer = AutoTokenizer.from_pretrained(RERANKER_MODEL_NAME)
-        model = AutoModelForSequenceClassification.from_pretrained(RERANKER_MODEL_NAME)
-        model.eval()
+        model = CrossEncoder(RERANKER_MODEL_NAME)
 
         # Prepare the query-document pairs for the model
-        pairs = [[query , doc.page_content] for doc in docs]
+        documents = [doc.page_content for doc in docs]
         
-        # Tokenize the pairs and generate scores
-        with torch.no_grad():
-            inputs = tokenizer(pairs, padding=True, truncation=True, return_tensors='pt', max_length=512)
-            scores = model(**inputs, return_dict=True).logits.view(-1, ).float()
-            
-            # Sort the documents based on the scores and return the top-k documents
-            sorted_indices = torch.argsort(scores, descending=True)
-            sorted_docs = [docs[i] for i in sorted_indices]
+        # Rank docs against query
+        results = model.rank(query, documents, return_documents= False, top_k = top_k)
+        indices = [res['corpus_id'] for res in results]
+        docs = [docs[i] for i in indices]
+        return docs
 
-        return sorted_docs[: top_k]
     # -------------------------------------------------- #
 
     # Auto-Merge

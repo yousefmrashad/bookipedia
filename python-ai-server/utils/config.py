@@ -24,6 +24,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
 from angle_emb import AnglE, Prompts
+from sentence_transformers import SentenceTransformer
 
 # Weaviate Class
 import weaviate
@@ -31,7 +32,7 @@ import weaviate.classes as wvc
 from weaviate.collections.classes.grpc import Sort
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.vectorstores.utils import maximal_marginal_relevance
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from sentence_transformers import CrossEncoder
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 # OpenAI
@@ -64,11 +65,11 @@ FETCHING_LIMIT = 1024
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-EMBEDDING_MODEL_NAME = "WhereIsAI/UAE-Large-V1"
+EMBEDDING_MODEL_NAME = "mixedbread-ai/mxbai-embed-large-v1"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
-RERANKER_MODEL_NAME = "BAAI/bge-reranker-base"
+RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
 
 # Database Name
 DB_NAME = "bookipedia"

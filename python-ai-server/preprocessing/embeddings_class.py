@@ -5,7 +5,7 @@ from utils.init import *
 
 # AnglEEmbedding Model
 class AnglEEmbedding(Embeddings):
-    def __init__(self, model_name=EMBEDDING_MODEL_NAME,
+    def __init__(self, model_name="WhereIsAI/UAE-Large-V1",
                 prompt=Prompts.C, pooling_strategy="cls"):
         
         self.model = AnglE.from_pretrained(model_name, pooling_strategy=pooling_strategy).cuda()
@@ -23,9 +23,8 @@ class AnglEEmbedding(Embeddings):
     
 # MXBAIEmbedding Model
 class MXBAIEmbedding(Embeddings):
-    def __init__(self, model_name="mixedbread-ai/mxbai-embed-large-v1",
+    def __init__(self, model_name=EMBEDDING_MODEL_NAME,
                 prompt=RETRIEVAL_PROMPT):
-        from sentence_transformers import SentenceTransformer
         self.model = SentenceTransformer(model_name).cuda()
         self.prompt = prompt
 
