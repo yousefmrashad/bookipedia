@@ -1,6 +1,7 @@
 # Config
 from root_config import *
 from utils.config import *
+
 # ================================================== #
 
 # -- Helpers -- #
@@ -22,4 +23,5 @@ def id_filter(source_id: str):
 
 def ids_filter(source_ids: list[str]):
     return wvc.query.Filter.by_property("source_id").contains_any(source_ids)
+
 # -------------------------------------------------- #
