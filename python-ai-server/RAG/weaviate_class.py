@@ -70,14 +70,9 @@ class Weaviate(VectorStore):
         
         embeddings = [obj.vector["default"] for obj in objects]
         mmr_selected = maximal_marginal_relevance(np.array(query_emb), embeddings, k=k, lambda_mult=lambda_mult)
-        objects = [objects[i] for i in mmr_selected]
 
-        if (auto_merge):
-            merged_objects = []
-            for source_id in source_ids:
-                merged_objects.extend(self.auto_merge(objects, source_id))
-                
-        docs = self.objects_to_docs(merged_objects)
+        objects = [objects[i] for i in mmr_selected]
+        docs = self.objects_to_docs(objects)
 
         return docs
     # -------------------------------------------------- #
