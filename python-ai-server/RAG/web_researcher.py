@@ -170,7 +170,7 @@ class WebResearchRetriever(BaseRetriever):
 
         # Get search questions
         logger.info("Generating questions for DuckDuckGo Search ...")
-        result = self.llm_chain({"question": query})
+        result = self.llm_chain.invoke({"question": query})
         logger.info(f"Questions for DuckDuckGo Search (raw): {result}")
         questions = result["text"]
         logger.info(f"Questions for DuckDuckGo Search: {questions}")
@@ -217,7 +217,7 @@ class WebResearchRetriever(BaseRetriever):
             (doc.page_content, tuple(sorted(doc.metadata.items()))): doc for doc in docs
         }
         unique_documents = list(unique_documents_dict.values())
-        self.vectorstore.delete()
+        # self.vectorstore.delete()
         return unique_documents
 
     async def _aget_relevant_documents(
