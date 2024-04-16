@@ -170,7 +170,7 @@ class WebResearchRetriever(BaseRetriever):
 
         # Get search questions
         logger.info("Generating questions for DuckDuckGo Search ...")
-        result = self.llm_chain({"question": query})
+        result = self.llm_chain.invoke({"question": query})
         logger.info(f"Questions for DuckDuckGo Search (raw): {result}")
         questions = result["text"]
         logger.info(f"Questions for DuckDuckGo Search: {questions}")
@@ -210,14 +210,14 @@ class WebResearchRetriever(BaseRetriever):
         logger.info("Grabbing most relevant splits from urls...")
         docs = []
         for query in questions:
-            docs.extend(self.vectorstore.similarity_search(query, k = k))
+            docs.extend(self.vectorstore.similarity_search(query, k=k))
 
         # Get unique docs
         unique_documents_dict = {
             (doc.page_content, tuple(sorted(doc.metadata.items()))): doc for doc in docs
         }
         unique_documents = list(unique_documents_dict.values())
-        self.vectorstore.delete()
+        # self.vectorstore.delete()
         return unique_documents
 
     async def _aget_relevant_documents(
