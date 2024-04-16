@@ -47,6 +47,8 @@ from weaviate.collections.classes.internal import QueryReturn, Object, ReturnPro
 
 # -- Constants -- #
 
+OPEN_AI_KEY = "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"
+
 # OCR
 DETECTION_MODEL = "db_mobilenet_v3_large"
 RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
