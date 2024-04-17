@@ -20,8 +20,8 @@ rag_pipeline = RAGPipeline(embedding_model)
 async def root():
     return {"message": "bookipedia"}
 
-@app.get("/stream_response_and_summary")
-async def stream_response_and_summary(user_prompt: str,
+@app.get("/stream_response_and_sources")
+async def stream_response_and_sources(user_prompt: str,
                                     chat_summary: str,
                                     chat: str,
                                     book_ids: list[str] = None,
@@ -29,17 +29,18 @@ async def stream_response_and_summary(user_prompt: str,
     # Initialize RAG pipeline
     async def stream_generator():
         # Yield data stream
-        response = ''
         async for chunk in rag_pipeline.generate_answer(user_prompt, chat_summary, chat, book_ids, enable_web_retrieval):
-            response += chunk 
             yield chunk.encode('utf-8')
-
         # Yield metadata as first part of the stream
-        yield b'\n'
+        yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
-        yield json.dumps(rag_pipeline.generate_chat_summary(response, user_prompt, chat)).encode('utf-8') + b'\n'
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
+@app.get("/chat_summary")
+async def chat_summary(response: str, user_prompt: str, prev_summary:str):
+    summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
+    summary_json = json.dumps({"summary": summary}).encode('utf-8')
+    return summary_json
 
 @app.get("/synthesize_audio/")
 async def synthesize_audio_endpoint(text: str):

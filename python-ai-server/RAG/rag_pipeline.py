@@ -94,13 +94,13 @@ class RAGPipeline:
         return context, metadata
     
 
-    def generate_chat_summary(self, response: str, user_question: str, chat: str):
+    def generate_chat_summary(self, response: str, user_question: str, summary: str):
         # Define the chat summary prompt template
         CHAT_SUMMARY_PROMPT = ChatPromptTemplate.from_template(
             """You are an assistant tasked with optimizing the process of summarizing user chat .
             Given the previous chat history, user prompt, and LLM response, summarize the chat effectively.
             Focus on new information and important highlights.
-            Previous Chat History: '''{chat}'''
+            Previous Chat Summary: '''{chat}'''
             User Question: '''{user_question}'''
             LLM Response: '''{response}'''""",
         )
@@ -109,13 +109,10 @@ class RAGPipeline:
         chat_summary_chain = CHAT_SUMMARY_PROMPT | self.llm
 
         # Invoke the chat summary chain with the chat, retrieving_query, and response
-        chat_summary = chat_summary_chain.invoke({"chat": chat, "user_question": user_question, "response": response})
+        chat_summary = chat_summary_chain.invoke({"summary": summary, "user_question": user_question, "response": response})
 
         # Return the content of the chat summary
         return chat_summary.content
-    
-    def generate_references(self):
-        return 'References: '+ '\n'.join(self.metadata)
 
     def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,book_ids: list[str] = None, enable_web_retrieval=True ):
         
