@@ -15,9 +15,6 @@ params = {
     "enable_web_retrieval": True
 }
 
-# Make GET request
-response = requests.get(url, params=params)
-
 # Print response content
-for line in response.iter_lines():
+for line in requests.get(url, params=params, stream=True).iter_lines():
     print(line.decode('utf-8'))

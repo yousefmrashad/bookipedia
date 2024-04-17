@@ -3,12 +3,18 @@ from utils.init import *
 # ================================================== #
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from RAG.rag_pipeline import RagPipeline
+from RAG.rag_pipeline import RAGPipeline
 from preprocessing.embeddings_class import MXBAIEmbedding
+from piper import PiperVoice
 import json
+
+voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx',
+                        '/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx.json',
+                        use_cuda=False)
 
 app = FastAPI()
 embedding_model=MXBAIEmbedding()
+rag_pipeline = RAGPipeline(embedding_model)
 
 @app.get("/")
 async def root():
@@ -21,7 +27,6 @@ async def stream_response_and_summary(user_prompt: str,
                                     book_ids: list[str] = None,
                                     enable_web_retrieval=True):
     # Initialize RAG pipeline
-    rag_pipeline = RagPipeline(embedding_model)
     async def stream_generator():
         # Yield data stream
         response = ''
@@ -34,6 +39,20 @@ async def stream_response_and_summary(user_prompt: str,
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
         yield json.dumps(rag_pipeline.generate_chat_summary(response, user_prompt, chat)).encode('utf-8') + b'\n'
     return StreamingResponse(stream_generator(), media_type="text/plain")
+
+
+@app.get("/synthesize_audio/")
+async def synthesize_audio_endpoint(text: str):
+    def synthesize_audio(text: str):
+        # Split the text into lines and synthesize each line
+        lines = text.split('\n')
+        for line in lines:
+            audio_stream = voice.synthesize_stream_raw(line)
+            for audio_bytes in audio_stream:
+                yield audio_bytes
+                
+    return StreamingResponse(synthesize_audio(text), media_type="audio/x-wav")
+
 
 if __name__ == "__main__":
     import uvicorn
