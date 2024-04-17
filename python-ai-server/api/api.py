@@ -8,6 +8,7 @@ from preprocessing.embeddings_class import MXBAIEmbedding
 import json
 
 app = FastAPI()
+embedding_model=MXBAIEmbedding()
 
 @app.get("/")
 async def root():
@@ -20,7 +21,7 @@ async def stream_response_and_summary(user_prompt: str,
                                     book_ids: list[str] = None,
                                     enable_web_retrieval=True):
     # Initialize RAG pipeline
-    rag_pipeline = RagPipeline(embedding_model=MXBAIEmbedding())
+    rag_pipeline = RagPipeline(embedding_model)
     async def stream_generator():
         # Yield data stream
         response = ''
