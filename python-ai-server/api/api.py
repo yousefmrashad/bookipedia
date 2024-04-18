@@ -24,8 +24,8 @@ async def root():
 async def stream_response_and_sources(user_prompt: str,
                                     chat_summary: str,
                                     chat: str,
-                                    book_ids: list[str] = None,
-                                    enable_web_retrieval=True):
+                                    book_ids: list[str],
+                                    enable_web_retrieval:bool = True):
     # Initialize RAG pipeline
     async def stream_generator():
         # Yield data stream
@@ -43,12 +43,12 @@ async def chat_summary(response: str, user_prompt: str, prev_summary:str):
     return summary_json
 
 @app.get("/synthesize_audio/")
-async def synthesize_audio_endpoint(text: str):
+async def synthesize_audio_endpoint(text: str, speed: float = 1):
     def synthesize_audio(text: str):
         # Split the text into lines and synthesize each line
         lines = text.split('\n')
         for line in lines:
-            audio_stream = voice.synthesize_stream_raw(line)
+            audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
             for audio_bytes in audio_stream:
                 yield audio_bytes
                 

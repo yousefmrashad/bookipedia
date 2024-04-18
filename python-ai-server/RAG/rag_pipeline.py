@@ -109,12 +109,12 @@ class RAGPipeline:
         chat_summary_chain = CHAT_SUMMARY_PROMPT | self.llm
 
         # Invoke the chat summary chain with the chat, retrieving_query, and response
-        chat_summary = chat_summary_chain.invoke({"summary": summary, "user_question": user_question, "response": response})
+        chat_summary = chat_summary_chain.invoke({"chat": summary, "user_question": user_question, "response": response})
 
         # Return the content of the chat summary
         return chat_summary.content
 
-    def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,book_ids: list[str] = None, enable_web_retrieval=True ):
+    def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,book_ids: list[str] = None, enable_web_retrieval=True):
         
         self.context, self.metadata = self.generate_context(user_prompt=user_prompt, chat_summary= chat_summary, book_ids= book_ids, enable_web_retrieval= enable_web_retrieval)
         
