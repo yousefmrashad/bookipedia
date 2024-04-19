@@ -25,9 +25,9 @@ class RAGPipeline:
         self.search =  DuckDuckGoSearchAPIWrapper()
         self.web_retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
 
-    def get_page_text(self, book_id: str, page_no: int):
+    def get_page_text(self, doc_id: str, page_no: int):
         col = self.client.collections.get("bookipedia")
-        filters = wvc.query.Filter.by_property("source_id").equal(book_id) & wvc.query.Filter.by_property("page_no").equal(page_no)
+        filters = wvc.query.Filter.by_property("source_id").equal(doc_id) & wvc.query.Filter.by_property("page_no").equal(page_no)
         res = col.query.fetch_objects(filters= filters, limit = FETCHING_LIMIT, sort = SORT)
         text = ''
         for o in res.objects:
@@ -58,15 +58,15 @@ class RAGPipeline:
 
     
     
-    def generate_context(self, user_prompt: str, chat_summary: str, book_ids: list[str] = None, enable_web_retrieval=True) :
+    def generate_context(self, user_prompt: str, chat_summary: str, doc_ids: list[str] = None, enable_web_retrieval=True) :
         
-        def generate_vecdb_context( retrieval_query: str, book_ids: list[str]):
+        def generate_vecdb_context( retrieval_query: str, doc_ids: list[str]):
         
-            docs = self.db.similarity_search(query=retrieval_query, source_ids=book_ids, auto_merge =True)
+            docs = self.db.similarity_search(query=retrieval_query, source_ids=doc_ids, auto_merge =True)
             
 
             content = [doc.page_content for doc in docs]
-            metadata = [f"book_id: {doc.metadata['source_id']}, page_no: {doc.metadata['page_no']}" for doc in docs]
+            metadata = [f"doc_id: {doc.metadata['source_id']}, page_no: {doc.metadata['page_no']}" for doc in docs]
             
             return content, metadata
         
@@ -85,10 +85,10 @@ class RAGPipeline:
         
         #  Generate context from the Weaviate Vector Database
         vecdb_context, vecdb_metadata = [] , []
-        if book_ids:
-            vecdb_context, vecdb_metadata = generate_vecdb_context(retrieval_query, book_ids)
+        if doc_ids:
+            vecdb_context, vecdb_metadata = generate_vecdb_context(retrieval_query, doc_ids)
         
-        # Optionally generate context from the web (if book_ids are provided)
+        # Optionally generate context from the web (if doc_ids are provided)
         web_context , web_metadata = [] , []
         
         if enable_web_retrieval:
@@ -121,9 +121,9 @@ class RAGPipeline:
         # Return the content of the chat summary
         return chat_summary.content
 
-    def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,book_ids: list[str] = None, enable_web_retrieval=True):
+    def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,doc_ids: list[str] = None, enable_web_retrieval=True):
         
-        self.context, self.metadata = self.generate_context(user_prompt=user_prompt, chat_summary= chat_summary, book_ids= book_ids, enable_web_retrieval= enable_web_retrieval)
+        self.context, self.metadata = self.generate_context(user_prompt=user_prompt, chat_summary= chat_summary, doc_ids= doc_ids, enable_web_retrieval= enable_web_retrieval)
         
         
         QA_PROMPT = ChatPromptTemplate.from_template(

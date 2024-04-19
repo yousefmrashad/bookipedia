@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
 from RAG.rag_pipeline import RAGPipeline
+from preprocessing.document_class import Document
 from preprocessing.embeddings_class import MXBAIEmbedding
 from utils.db_config import DB
 from piper import PiperVoice
@@ -26,12 +27,12 @@ async def root():
 async def stream_response_and_sources(user_prompt: str,
                                     chat_summary: str,
                                     chat: str,
-                                    book_ids: Annotated[list[str] | None, Query()],
+                                    doc_ids: Annotated[list[str] | None, Query()],
                                     enable_web_retrieval:bool = True):
     # Initialize RAG pipeline
     async def stream_generator():
         # Yield data stream
-        async for chunk in rag_pipeline.generate_answer(user_prompt, chat_summary, chat, book_ids, enable_web_retrieval):
+        async for chunk in rag_pipeline.generate_answer(user_prompt, chat_summary, chat, doc_ids, enable_web_retrieval):
             yield chunk.encode('utf-8')
         # Yield metadata as first part of the stream
         yield b'\n\nSources: '
@@ -56,11 +57,11 @@ async def synthesize_audio_endpoint(text: str, speed: float = 1):
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
 @app.get("/synthesize_audio_from_pages/")
-async def synthesize_audio_from_file_endpoint(book_id: str, pages: Annotated[list[int] | None, Query()], speed: float = 1):
+async def synthesize_audio_from_file_endpoint(doc_id: str, pages: Annotated[list[int] | None, Query()], speed: float = 1):
     def synthesize_audio():
         # Split the text into lines and synthesize each line
         for page in pages:
-            text = rag_pipeline.get_page_text(book_id, page)
+            text = rag_pipeline.get_page_text(doc_id, page)
             lines = text.split('\n')
             for line in lines:
                 audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
