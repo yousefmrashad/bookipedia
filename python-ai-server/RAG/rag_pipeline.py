@@ -25,7 +25,14 @@ class RAGPipeline:
         self.search =  DuckDuckGoSearchAPIWrapper()
         self.web_retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
 
-
+    def get_page_text(self, book_id: str, page_no: int):
+        col = self.client.collections.get("bookipedia")
+        filters = wvc.query.Filter.by_property("source_id").equal(book_id) & wvc.query.Filter.by_property("page_no").equal(page_no)
+        res = col.query.fetch_objects(filters= filters, limit = FETCHING_LIMIT, sort = SORT)
+        text = ''
+        for o in res.objects:
+            text += o.properties["text"] + '\n'
+        return text
 
 
     def generate_retrieval_query(self, user_prompt:str, chat_summary:str):
