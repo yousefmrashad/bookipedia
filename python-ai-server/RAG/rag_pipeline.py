@@ -5,7 +5,6 @@ from utils.db_config import DB
 from RAG.web_weaviate import WebWeaviate
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from RAG.web_researcher import WebResearchRetriever
-from langchain.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
 from RAG.web_researcher import WebResearchRetriever
 from preprocessing.embeddings_class import AnglEEmbedding
 from RAG.weaviate_class import Weaviate
@@ -128,7 +127,6 @@ class RAGPipeline:
             """You are an assistant tasked with answering user question.
             Given the previous chat history, user question, and relevant context, provide a clear, concise, and informative answer.
             Your response should be structured in a way that is easy to understand and directly addresses the user's question.
-            Make sure to highlight the most relevant information from the context and link any sources or references appropriately.
             Previous Chat History: '''{chat}'''
             User Question: '''{user_prompt}'''
             Relevant Context: '''{context}''' """
