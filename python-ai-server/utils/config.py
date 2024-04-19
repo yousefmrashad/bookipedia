@@ -55,7 +55,7 @@ RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
 CHUNK_SIZE = 128
-CHUNK_OVERLAP = 32
+CHUNK_OVERLAP = 0
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
 # Auto Merging

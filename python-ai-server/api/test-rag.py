@@ -12,7 +12,7 @@ params = {
     User: Got it. How does the model learn to interpret these positional encodings?
     Assistant: Through training, the model learns to associate positional encoding patterns with token positions. This helps it understand sequential relationships between tokens better.
     """,
-    "book_ids": ['1'],
+    "doc_ids": ['1'],
     "enable_web_retrieval": False
 }
 params1 = {

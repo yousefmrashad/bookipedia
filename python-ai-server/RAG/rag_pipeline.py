@@ -62,21 +62,19 @@ class RAGPipeline:
         
         def generate_vecdb_context( retrieval_query: str, doc_ids: list[str]):
         
-            docs = self.db.similarity_search(query=retrieval_query, source_ids=doc_ids, auto_merge =True)
+            docs = self.db.similarity_search(query=retrieval_query, source_ids=doc_ids, auto_merge = False)
             
 
             content = [doc.page_content for doc in docs]
-            metadata = [f"doc_id: {doc.metadata['source_id']}, page_no: {doc.metadata['page_no']}" for doc in docs]
+            metadata = [{"doc_id": doc.metadata['source_id'], "page_no": doc.metadata['page_no'], "text": doc.page_content} for doc in docs]
             
             return content, metadata
         
         def generate_web_context( retrieval_query: str):
             docs = self.web_retriever.invoke(retrieval_query)
-            content, metadata = list() ,list()
 
-            for doc in docs:
-                content.append(doc.page_content)
-                metadata.append(doc.metadata['source'])
+            content = [doc.page_content for doc in docs]
+            metadata = [doc.metadata['source'] for doc in docs]
             return content, list(set(metadata))
 
         
