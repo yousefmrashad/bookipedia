@@ -54,7 +54,7 @@ class RAGPipeline:
     
     async def summarize_pages(self, doc_id:str , page_nos : list[str], token_limit:int = 15872):
         #  get chunks and concatenate pages into a single string
-        pages_text = '\n\n'.join([self.get_page_text(doc_id , page_no) for page_no in page_nos ])
+        pages_text = '\n\n'.join([self.get_page_text(doc_id , page_no) for page_no in page_nos])
         
         SUMMARY_PROMPT = ChatPromptTemplate.from_template("""
             You are an assistant tasked with summarizing the provided text.
@@ -64,12 +64,12 @@ class RAGPipeline:
         
         self.summary_chain = SUMMARY_PROMPT | self.llm | StrOutputParser()
 
-        summary = await self.summarize_text(pages_text, token_limit)
+        sub_summaries_joined = await self.summarize_text(pages_text, token_limit)
 
-        if(count_tokens(summary) > token_limit):
-            summary = await self.summarize_text(pages_text, token_limit)
+        if(count_tokens(sub_summaries_joined) > token_limit):
+            sub_summaries_joined = await self.summarize_text(pages_text, token_limit)
         # Streaming Final summary. 
-        return self.summary_chain.astream({"text": summary})
+        return self.summary_chain.astream({"text": sub_summaries_joined})
 
 
     def generate_retrieval_query(self, user_prompt:str, chat_summary:str):
