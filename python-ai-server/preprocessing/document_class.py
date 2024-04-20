@@ -3,7 +3,7 @@ from root_config import *
 from utils.init import *
 
 # Modules
-from preprocessing.embeddings_class import AnglEEmbedding
+from preprocessing.embeddings_class import MXBAIEmbedding
 # ================================================== #
 
 class Document:
@@ -70,6 +70,6 @@ class Document:
     def preprocess(self, client: WeaviateClient):
         self.get_text_based_document()
         self.load_and_split()
-        self.generate_embeddings(embedder=AnglEEmbedding())
+        self.generate_embeddings(embedder=MXBAIEmbedding())
         self.store_in_db(client)
     # -------------------------------------------------- #

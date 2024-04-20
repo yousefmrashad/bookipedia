@@ -9,6 +9,7 @@ from preprocessing.document_class import Document
 from preprocessing.embeddings_class import MXBAIEmbedding
 from utils.db_config import DB
 from piper import PiperVoice
+import requests
 import json
 
 voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx',
@@ -18,10 +19,33 @@ voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_
 app = FastAPI()
 embedding_model=MXBAIEmbedding()
 rag_pipeline = RAGPipeline(embedding_model)
+db = DB()
 
 @app.get("/")
 async def root():
     return {"message": "bookipedia"}
+
+@app.post("/add_document")
+async def add_document(doc_id: str, url: str):
+    # Send a GET request to the URL
+    response = requests.get(url)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Open the file in binary write mode and write the contents of the response to it
+        with open(doc_id, 'wb') as file:
+            file.write(response.content)
+        print("File downloaded successfully.")
+    else:
+        print("Failed to download file. Status code:", response.status_code)
+
+    # Preprocess and store document
+    doc = Document(doc_path= doc_id, doc_id= doc_id)
+    doc.preprocess(db)
+    # Delete the file named doc_id
+    os.remove(doc_id)
+    
+    return {"message": "Document added successfully"}
 
 @app.get("/stream_response_and_sources")
 async def stream_response_and_sources(user_prompt: str,
