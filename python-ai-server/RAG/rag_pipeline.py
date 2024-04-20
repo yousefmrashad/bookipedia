@@ -32,6 +32,27 @@ class RAGPipeline:
         for o in res.objects:
             text += o.properties["text"] + '\n'
         return text
+    
+    def text_summary(self, book_id:str , page_nos : list[str]):
+        #  get chuncks and concatenate pages into a single string
+        pages_text = '\n'.join([self.get_page_text(doc_id =book_id , page_no=page_no) for page_no in page_nos ])
+        # chunk pages_text with overlap. 
+        text_chunks = None
+        
+        # Creating summary chain
+        SUMMARY_PROMPT = ChatPromptTemplate.from_template("""
+            You are an assistant tasked with summarizing the provided text.
+            Your goal is to create a concise summary that captures the essence of the original content, focusing on the most important points and key information.
+            Please ensure that the summary is clear, informative, and easy to understand.
+            THE INPUT TEXT: '''{text}'''  """)
+        
+        summary_chain = SUMMARY_PROMPT | self.llm | StrOutputParser()
+        
+        #  use llm to summarize each chunks
+        sub_summaries = [ summary_chain.invoke({"text":text_chunk }) for text_chunk in text_chunks]
+        
+        # Streaming Final summary. 
+        return summary_chain.astream({"text": ('\n'.join(sub_summaries))})
 
 
     def generate_retrieval_query(self, user_prompt:str, chat_summary:str):

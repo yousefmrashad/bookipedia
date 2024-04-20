@@ -92,6 +92,17 @@ async def synthesize_audio_from_file_endpoint(doc_id: str, pages: Annotated[list
                     yield audio_bytes
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
+
+@app.get("/text_summary")
+async def text_summary_endpoint(book_id: str, page_ids: list[str] ):
+    
+    async def stream_generator():
+        # Yield data stream
+        async for chunk in rag_pipeline.text_summary(book_id, page_ids):
+            yield chunk.encode('utf-8')
+            
+    return StreamingResponse(stream_generator(), media_type="text/plain")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
