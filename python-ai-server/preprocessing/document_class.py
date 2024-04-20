@@ -67,9 +67,9 @@ class Document:
             collection.data.insert_many(objs)
     # -------------------------------------------------- #
     
-    def preprocess(self, client: WeaviateClient):
+    def preprocess(self, client: WeaviateClient, embedder: Embeddings):
         self.get_text_based_document()
         self.load_and_split()
-        self.generate_embeddings(embedder=MXBAIEmbedding())
+        self.generate_embeddings(embedder)
         self.store_in_db(client)
     # -------------------------------------------------- #

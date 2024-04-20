@@ -18,8 +18,8 @@ voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_
 
 app = FastAPI()
 embedding_model=MXBAIEmbedding()
-rag_pipeline = RAGPipeline(embedding_model)
-db = DB()
+client = DB().connect()
+rag_pipeline = RAGPipeline(embedding_model, client)
 
 @app.get("/")
 async def root():
@@ -29,21 +29,20 @@ async def root():
 async def add_document(doc_id: str, url: str):
     # Send a GET request to the URL
     response = requests.get(url)
-
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Open the file in binary write mode and write the contents of the response to it
-        with open(doc_id, 'wb') as file:
+        with open(doc_id + '.pdf', 'wb') as file:
             file.write(response.content)
         print("File downloaded successfully.")
     else:
         print("Failed to download file. Status code:", response.status_code)
 
     # Preprocess and store document
-    doc = Document(doc_path= doc_id, doc_id= doc_id)
-    doc.preprocess(db)
+    doc = Document(doc_path = doc_id + '.pdf', doc_id= doc_id)
+    doc.preprocess(client, embedding_model)
     # Delete the file named doc_id
-    os.remove(doc_id)
+    os.remove(doc_id + '.pdf')
     
     return {"message": "Document added successfully"}
 

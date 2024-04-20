@@ -6,7 +6,7 @@ from RAG.web_weaviate import WebWeaviate
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from RAG.web_researcher import WebResearchRetriever
 from RAG.web_researcher import WebResearchRetriever
-from preprocessing.embeddings_class import AnglEEmbedding
+from preprocessing.embeddings_class import MXBAIEmbedding
 from RAG.weaviate_class import Weaviate
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -14,11 +14,11 @@ from langchain_core.output_parsers import StrOutputParser
 
 class RAGPipeline:
     
-    def __init__(self, embedding_model:Embeddings) -> None:
+    def __init__(self,embedding_model:Embeddings, client:WeaviateClient = DB().connect()) -> None:
         self.llm = ChatOpenAI(model_name="gpt-3.5-turbo-0125", temperature=0, streaming=True, openai_api_key=OPEN_AI_KEY)
-        self.client = DB().connect()
         self.embedding_model = embedding_model
-        self.db = Weaviate(self.client, embedder=self.embedding_model)
+        self.client = client
+        self.db = Weaviate(self.client, self.embedding_model)
         self.web_client = weaviate.connect_to_local()
         self.web_db = WebWeaviate(self.web_client, embedder=self.embedding_model)
         self.search =  DuckDuckGoSearchAPIWrapper()
