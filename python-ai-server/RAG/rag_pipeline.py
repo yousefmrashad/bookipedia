@@ -1,12 +1,11 @@
 from root_config import *
 from utils.init import *
 # ================================================== #
+from asyncio import gather
 from utils.db_config import DB
 from RAG.web_weaviate import WebWeaviate
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from RAG.web_researcher import WebResearchRetriever
-from RAG.web_researcher import WebResearchRetriever
-from preprocessing.embeddings_class import MXBAIEmbedding
 from RAG.weaviate_class import Weaviate
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -24,35 +23,53 @@ class RAGPipeline:
         self.search =  DuckDuckGoSearchAPIWrapper()
         self.web_retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
 
-    def get_page_text(self, doc_id: str, page_no: int):
+    def get_page_text(self, doc_id: str, page_no: int) -> str:
         col = self.client.collections.get("bookipedia")
-        filters = wvc.query.Filter.by_property("source_id").equal(doc_id) & wvc.query.Filter.by_property("page_no").equal(page_no)
+        filters = id_filter(doc_id) & page_filter(page_no)
         res = col.query.fetch_objects(filters= filters, limit = FETCHING_LIMIT, sort = SORT)
-        text = ''
+        texts = []
         for o in res.objects:
-            text += o.properties["text"] + '\n'
+            texts.append(o.properties["text"])
+        text = merge_chunks(texts)
         return text
     
-    def text_summary(self, book_id:str , page_nos : list[str]):
-        #  get chuncks and concatenate pages into a single string
-        pages_text = '\n'.join([self.get_page_text(doc_id =book_id , page_no=page_no) for page_no in page_nos ])
+    def summary_splitter(self, text:str, token_limit:int) -> list[str]:
+        token_count = count_tokens(text)
+        no_splits = math.ceil(token_count/token_limit)
+        chunk_size = token_count//no_splits
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=128,
+                                                        length_function=count_tokens, separators=SEPARATORS,
+                                                        is_separator_regex=True)
+        text_chunks = text_splitter.split_text(text)
+        return text_chunks
+    
+    async def summarize_text(self, text:str, token_limit:int):
         # chunk pages_text with overlap. 
-        text_chunks = None
+        text_chunks = self.summary_splitter(text, token_limit)
+
+        # use llm to summarize each chunk
+        sub_summaries = await gather(*(self.summary_chain.ainvoke({"text": text_chunk}) for text_chunk in text_chunks))
+        joined_summary = '\n\n'.join(sub_summaries)
+        return joined_summary
+    
+    async def summarize_pages(self, doc_id:str , page_nos : list[str], token_limit:int = 15872):
+        #  get chunks and concatenate pages into a single string
+        pages_text = '\n\n'.join([self.get_page_text(doc_id , page_no) for page_no in page_nos ])
         
-        # Creating summary chain
         SUMMARY_PROMPT = ChatPromptTemplate.from_template("""
             You are an assistant tasked with summarizing the provided text.
             Your goal is to create a concise summary that captures the essence of the original content, focusing on the most important points and key information.
             Please ensure that the summary is clear, informative, and easy to understand.
             THE INPUT TEXT: '''{text}'''  """)
         
-        summary_chain = SUMMARY_PROMPT | self.llm | StrOutputParser()
-        
-        #  use llm to summarize each chunks
-        sub_summaries = [ summary_chain.invoke({"text":text_chunk }) for text_chunk in text_chunks]
-        
+        self.summary_chain = SUMMARY_PROMPT | self.llm | StrOutputParser()
+
+        summary = await self.summarize_text(pages_text, token_limit)
+
+        if(count_tokens(summary) > token_limit):
+            summary = await self.summarize_text(pages_text, token_limit)
         # Streaming Final summary. 
-        return summary_chain.astream({"text": ('\n'.join(sub_summaries))})
+        return self.summary_chain.astream({"text": summary})
 
 
     def generate_retrieval_query(self, user_prompt:str, chat_summary:str):

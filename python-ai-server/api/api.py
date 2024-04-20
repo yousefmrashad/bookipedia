@@ -94,11 +94,10 @@ async def synthesize_audio_from_file_endpoint(doc_id: str, pages: Annotated[list
 
 
 @app.get("/text_summary")
-async def text_summary_endpoint(book_id: str, page_ids: list[str] ):
-    
+async def text_summary_endpoint(doc_id: str, pages: Annotated[list[int] | None, Query()]):
     async def stream_generator():
         # Yield data stream
-        async for chunk in rag_pipeline.text_summary(book_id, page_ids):
+        async for chunk in await rag_pipeline.summarize_pages(doc_id, pages):
             yield chunk.encode('utf-8')
             
     return StreamingResponse(stream_generator(), media_type="text/plain")
