@@ -99,7 +99,7 @@ class RAGPipeline:
         
         def generate_vecdb_context(retrieval_query: str):
         
-            docs = self.db.similarity_search(query=retrieval_query, source_ids=doc_ids, auto_merge = False)
+            docs = self.db.similarity_search(query=retrieval_query, source_ids=doc_ids, auto_merge = True)
             
 
             content = [doc.page_content for doc in docs]
@@ -121,7 +121,7 @@ class RAGPipeline:
         #  Generate context from the Weaviate Vector Database
         vecdb_context, vecdb_metadata = [] , []
         if doc_ids:
-            vecdb_context, vecdb_metadata = generate_vecdb_context(retrieval_query, doc_ids)
+            vecdb_context, vecdb_metadata = generate_vecdb_context(retrieval_query)
         
         # Optionally generate context from the web (if doc_ids are provided)
         web_context , web_metadata = [] , []
