@@ -1,9 +1,6 @@
 # Utils
 from root_config import *
 from utils.init import *
-
-# Modules
-from preprocessing.embeddings_class import MXBAIEmbedding
 # ================================================== #
 
 class Document:

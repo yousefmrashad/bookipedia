@@ -50,7 +50,7 @@ async def add_document(doc_id: str, url: str):
 async def stream_response_and_sources(user_prompt: str,
                                     chat_summary: str,
                                     chat: str,
-                                    doc_ids: Annotated[list[str] | None, Query()],
+                                    doc_ids: Annotated[list[str] | None, Query()] = None,
                                     enable_web_retrieval:bool = True):
     # Initialize RAG pipeline
     async def stream_generator():
