@@ -64,8 +64,8 @@ async def add_document(doc_id: str, url: str):
     else:
         print("Failed to download file. Status code:", response.status_code)
         return {"message": "Failed to download file. Status code:", "status code": response.status_code}
-    
-    # Preprocess and store document
+
+    # Create a Document object and add it to the background tasks    
     doc = Document(doc_path, doc_id)
     is_text_based = doc.is_text_based_document()
     background_tasks.add_task(process_document(doc, is_text_based))
@@ -74,13 +74,13 @@ async def add_document(doc_id: str, url: str):
     else:
         return {"message": "Document is not text-based. Applying OCR."}
 
-@app.get("/stream_response_and_sources")
-async def stream_response_and_sources(chat_id:str,
-                                    user_prompt: str,
-                                    chat_summary: str,
-                                    chat: str,
-                                    doc_ids: Annotated[list[str] | None, Query()] = None,
-                                    enable_web_retrieval:bool = True):
+@app.get("/chat_response")
+async def chat_response(chat_id:str,
+                        user_prompt: str,
+                        chat_summary: str,
+                        chat: str,
+                        doc_ids: Annotated[list[str] | None, Query()] = None,
+                        enable_web_retrieval:bool = True):
     # Initialize RAG pipeline
     async def stream_generator():
         response = ""
@@ -91,11 +91,12 @@ async def stream_response_and_sources(chat_id:str,
         # Yield metadata as first part of the stream
         yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
+        # Add chat summary to background tasks
         background_tasks.add_task(chat_summary(chat_id, response, user_prompt, chat_summary))
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
-@app.get("/synthesize_audio_from_text/")
-async def synthesize_audio_endpoint(text: str, speed: float = 1):
+@app.get("/tts/")
+async def text_to_speech(text: str, speed: float = 1):
     def synthesize_audio():
         # Split the text into lines and synthesize each line
         lines = text.split('\n')
@@ -105,8 +106,8 @@ async def synthesize_audio_endpoint(text: str, speed: float = 1):
                 yield audio_bytes
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
-@app.get("/synthesize_audio_from_pages/")
-async def synthesize_audio_from_file_endpoint(doc_id: str, pages: Annotated[list[int] | None, Query()], speed: float = 1):
+@app.get("/tts_pages/")
+async def pages_to_speech(doc_id: str, pages: Annotated[list[int] | None, Query()], speed: float = 1):
     def synthesize_audio():
         # Split the text into lines and synthesize each line
         for page in pages:
@@ -119,8 +120,8 @@ async def synthesize_audio_from_file_endpoint(doc_id: str, pages: Annotated[list
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
 
-@app.get("/text_summary")
-async def text_summary_endpoint(doc_id: str, pages: Annotated[list[int] | None, Query()]):
+@app.get("/summarize_pages")
+async def summarize_pages(doc_id: str, pages: Annotated[list[int] | None, Query()]):
     async def stream_generator():
         # Yield data stream
         async for chunk in await rag_pipeline.summarize_pages(doc_id, pages):
