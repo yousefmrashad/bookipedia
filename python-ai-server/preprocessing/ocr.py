@@ -114,15 +114,13 @@ class OCR:
     # -------------------------------------------------- #
 
     # Save the output PDF with HOCR format
-    def save_hocr_doc(self):
-        hocr_doc_path = self.doc_path.replace(".pdf", "_hocr.pdf")
-        self.pdf_output.save(hocr_doc_path)
-
-        return hocr_doc_path
+    def save_hocr_doc(self) -> None:
+        # hocr_doc_path = self.doc_path.replace(".pdf", "_hocr.pdf")
+        self.pdf_output.save(self.doc_path)
     # -------------------------------------------------- #
 
     # OCR Pipeline
-    def apply_ocr(self, deskew=False, filter=False) -> str:
+    def apply_ocr(self, deskew=False, filter=False) -> None:
         if (filter):
             self.docs = [OCR.filter_image(page) for page in self.docs]
         if (deskew):
@@ -130,7 +128,5 @@ class OCR:
 
         self.ocr()
         self.hocr()
-        hocr_doc_path = self.save_hocr_doc()
-        
-        return hocr_doc_path
+        self.save_hocr_doc()
     # -------------------------------------------------- #

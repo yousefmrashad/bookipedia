@@ -9,15 +9,16 @@ class Document:
         self.doc_id = doc_id
     # -------------------------------------------------- #
     
-    def get_text_based_document(self):
+    def is_text_based_document(self) -> bool:
         pages = pypdf.PdfReader(self.doc_path).pages
         for page in pages:
             if (page.extract_text().strip()):
-                return
-
+                return True
+        return False
+    
+    def get_text_based_document(self):
         from preprocessing.ocr import OCR
-        hocr_doc_path = OCR(self.doc_path).apply_ocr()
-        self.doc_path = hocr_doc_path
+        OCR(self.doc_path).apply_ocr()
     # -------------------------------------------------- #
     
     def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
@@ -65,7 +66,8 @@ class Document:
     # -------------------------------------------------- #
     
     def preprocess(self, client: WeaviateClient, embedder: Embeddings):
-        self.get_text_based_document()
+        if (self.is_text_based_document()):
+            self.get_text_based_document()
         self.load_and_split()
         self.generate_embeddings(embedder)
         self.store_in_db(client)

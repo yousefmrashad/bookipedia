@@ -76,4 +76,9 @@ RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
 
 # Database Name
 DB_NAME = "bookipedia"
+
+# Back-End URLs
+CHAT_SUMMARY_URL = "http://backend:3000/chat_summary"
+POST_HOCR_URL = "http://backend:3000/post_hocr"
+ACKNOWLEDGE_URL = "http://backend:3000/acknowledge"
 # -------------------------------------------------- #

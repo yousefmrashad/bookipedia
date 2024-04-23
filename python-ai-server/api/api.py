@@ -2,7 +2,7 @@ from root_config import *
 from utils.init import *
 # ================================================== #
 from typing import Annotated
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from RAG.rag_pipeline import RAGPipeline
 from preprocessing.document_class import Document
@@ -11,7 +11,9 @@ from utils.db_config import DB
 from piper import PiperVoice
 import requests
 import json
+# ================================================== #
 
+#Initializations
 voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx',
                         '/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx.json',
                         use_cuda=False)
@@ -20,7 +22,30 @@ app = FastAPI()
 embedding_model=MXBAIEmbedding()
 client = DB().connect()
 rag_pipeline = RAGPipeline(embedding_model, client)
+background_tasks = BackgroundTasks()
+# -------------------------------------------------- #
 
+# Background Tasks
+def process_document(doc: Document, is_text_based: bool = True):
+    doc.preprocess(client, embedding_model)
+    if is_text_based:
+        # Delete the file named doc_id
+        requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document preprocessing completed."})
+    else:
+        with open(doc.doc_path, 'rb') as file:
+            response = requests.post(POST_HOCR_URL, data = file, stream = True)
+        if response.status_code == 200:
+            requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document OCR and preprocessing completed."})
+        else:
+            print("Failed to post HOCR file. Status code:", response.status_code)
+    os.remove(doc.doc_path)
+
+def chat_summary(response: str, user_prompt: str, prev_summary:str):
+    summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
+    requests.post(CHAT_SUMMARY_URL, data = {"summary": summary})
+# -------------------------------------------------- #
+
+# Endpoints
 @app.get("/")
 async def root():
     return {"message": "bookipedia"}
@@ -32,19 +57,22 @@ async def add_document(doc_id: str, url: str):
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Open the file in binary write mode and write the contents of the response to it
-        with open(doc_id + '.pdf', 'wb') as file:
+        doc_path = doc_id + '.pdf'
+        with open(doc_path, 'wb') as file:
             file.write(response.content)
         print("File downloaded successfully.")
     else:
         print("Failed to download file. Status code:", response.status_code)
-
-    # Preprocess and store document
-    doc = Document(doc_path = doc_id + '.pdf', doc_id= doc_id)
-    doc.preprocess(client, embedding_model)
-    # Delete the file named doc_id
-    os.remove(doc_id + '.pdf')
+        return {"message": "Failed to download file. Status code:", "status code": response.status_code}
     
-    return {"message": "Document added successfully"}
+    # Preprocess and store document
+    doc = Document(doc_path, doc_id)
+    is_text_based = doc.is_text_based_document()
+    background_tasks.add_task(process_document(doc, is_text_based))
+    if(is_text_based):
+        return {"message": "Document is text-based. Preprocessing started."}
+    else:
+        return {"message": "Document is not text-based. Applying OCR."}
 
 @app.get("/stream_response_and_sources")
 async def stream_response_and_sources(user_prompt: str,
@@ -54,19 +82,16 @@ async def stream_response_and_sources(user_prompt: str,
                                     enable_web_retrieval:bool = True):
     # Initialize RAG pipeline
     async def stream_generator():
+        response = ""
         # Yield data stream
         async for chunk in rag_pipeline.generate_answer(user_prompt, chat_summary, chat, doc_ids, enable_web_retrieval):
+            response += chunk
             yield chunk.encode('utf-8')
         # Yield metadata as first part of the stream
         yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
+        background_tasks.add_task(chat_summary(response, user_prompt, chat_summary))
     return StreamingResponse(stream_generator(), media_type="text/plain")
-
-@app.get("/chat_summary")
-async def chat_summary(response: str, user_prompt: str, prev_summary:str):
-    summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
-    summary_json = json.dumps({"summary": summary}).encode('utf-8')
-    return summary_json
 
 @app.get("/synthesize_audio_from_text/")
 async def synthesize_audio_endpoint(text: str, speed: float = 1):
