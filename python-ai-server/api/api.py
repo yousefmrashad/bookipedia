@@ -40,9 +40,9 @@ def process_document(doc: Document, is_text_based: bool = True):
             print("Failed to post HOCR file. Status code:", response.status_code)
     os.remove(doc.doc_path)
 
-def chat_summary(response: str, user_prompt: str, prev_summary:str):
+def chat_summary(chat_id:str, response: str, user_prompt: str, prev_summary:str):
     summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
-    requests.post(CHAT_SUMMARY_URL, data = {"summary": summary})
+    requests.post(CHAT_SUMMARY_URL, data = {"chat_id":chat_id, "summary": summary})
 # -------------------------------------------------- #
 
 # Endpoints
@@ -75,7 +75,8 @@ async def add_document(doc_id: str, url: str):
         return {"message": "Document is not text-based. Applying OCR."}
 
 @app.get("/stream_response_and_sources")
-async def stream_response_and_sources(user_prompt: str,
+async def stream_response_and_sources(chat_id:str,
+                                    user_prompt: str,
                                     chat_summary: str,
                                     chat: str,
                                     doc_ids: Annotated[list[str] | None, Query()] = None,
@@ -90,7 +91,7 @@ async def stream_response_and_sources(user_prompt: str,
         # Yield metadata as first part of the stream
         yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
-        background_tasks.add_task(chat_summary(response, user_prompt, chat_summary))
+        background_tasks.add_task(chat_summary(chat_id, response, user_prompt, chat_summary))
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
 @app.get("/synthesize_audio_from_text/")
