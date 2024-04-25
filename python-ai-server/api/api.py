@@ -31,9 +31,9 @@ background_tasks = BackgroundTasks()
 # -------------------------------------------------- #
 
 # Background Tasks
-def process_document(doc: Document, is_text_based: bool = True):
+def process_document(doc: Document):
     doc.preprocess(client, embedding_model)
-    if is_text_based:
+    if doc.text_based:
         # Delete the file named doc_id
         requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document preprocessing completed."})
     else:
@@ -72,9 +72,8 @@ async def add_document(doc_id: str, url: str):
 
     # Create a Document object and add it to the background tasks    
     doc = Document(doc_path, doc_id)
-    is_text_based = doc.is_text_based_document()
-    background_tasks.add_task(process_document(doc, is_text_based))
-    if(is_text_based):
+    background_tasks.add_task(process_document(doc))
+    if(doc.text_based):
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
     else:
         return {"message": "Document is not text-based. Applying OCR.", "OCR": True}

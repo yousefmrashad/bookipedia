@@ -7,14 +7,14 @@ class Document:
     def __init__(self, doc_path: str, doc_id: str):
         self.doc_path = doc_path
         self.doc_id = doc_id
-    # -------------------------------------------------- #
-    
-    def is_text_based_document(self) -> bool:
         pages = pypdf.PdfReader(self.doc_path).pages
         for page in pages:
             if (page.extract_text().strip()):
-                return True
-        return False
+                self.text_based = True
+                break
+            else:
+                self.text_based = False
+    # -------------------------------------------------- #
     
     def get_text_based_document(self):
         from preprocessing.ocr import OCR
@@ -66,7 +66,7 @@ class Document:
     # -------------------------------------------------- #
     
     def preprocess(self, client: WeaviateClient, embedder: Embeddings):
-        if (self.is_text_based_document()):
+        if (self.text_based):
             self.get_text_based_document()
         self.load_and_split()
         self.generate_embeddings(embedder)

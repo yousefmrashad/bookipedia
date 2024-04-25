@@ -13,15 +13,14 @@ from langchain_core.output_parsers import StrOutputParser
 
 class RAGPipeline:
     
-    def __init__(self,embedding_model:Embeddings, client:WeaviateClient = DB().connect()) -> None:
+    def __init__(self,embedding_model:Embeddings, client:WeaviateClient) -> None:
         self.llm = ChatOpenAI(model_name="gpt-3.5-turbo-0125", temperature=0, streaming=True, openai_api_key=OPEN_AI_KEY)
         self.embedding_model = embedding_model
         self.client = client
         self.db = Weaviate(self.client, self.embedding_model)
-        self.web_client = weaviate.connect_to_local()
-        self.web_db = WebWeaviate(self.web_client, embedder=self.embedding_model)
+        self.web_db = WebWeaviate(self.client, embedder=self.embedding_model)
         self.search =  DuckDuckGoSearchAPIWrapper()
-        self.web_retriever = WebResearchRetriever.from_llm( vectorstore=self.web_db , llm=self.llm,  search=self.search)
+        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db , llm=self.llm,  search=self.search)
 
     def get_page_text(self, doc_id: str, page_no: int) -> str:
         col = self.client.collections.get("bookipedia")
