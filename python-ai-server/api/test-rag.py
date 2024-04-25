@@ -1,9 +1,9 @@
 import requests
 
-url = "http://localhost:8000/stream_response_and_sources"
+url = "http://localhost:8000/chat_response/1"
 
 # Parameters
-params = {
+body = {
     "user_prompt": "what is their mathematical basis?",
     "chat_summary": "user discussed positional encodings in transformers",
     "chat": """
@@ -13,9 +13,11 @@ params = {
     Assistant: Through training, the model learns to associate positional encoding patterns with token positions. This helps it understand sequential relationships between tokens better.
     """,
     "doc_ids": ['1'],
-    "enable_web_retrieval": False
 }
-params1 = {
+params = {
+    'enable_web_retrieval': False
+}
+body_web = {
     "user_prompt": "what are Tesla's major contributions?",
     "chat_summary": "Nikola Tesla was a Serbian-American inventor, electrical engineer, and futurist. He is known for his contributions.",
     "chat": """
@@ -23,11 +25,10 @@ params1 = {
     Answer: Nikola Tesla was a famous inventor.
     User: What is his nationality?
     Answer: He was a Serbian-American.
-    """,
-    "enable_web_retrieval": True
-}
+    """
+    }
 
 # Print response content
-response = requests.get(url, params=params, stream=True)
+response = requests.get(url, json=body, params = params, stream=True)
 for line in response.iter_lines():
     print(line.decode('utf-8'))

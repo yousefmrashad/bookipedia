@@ -4,6 +4,7 @@ from utils.init import *
 from typing import Annotated
 from fastapi import FastAPI, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse
+from bodies import *
 from RAG.rag_pipeline import RAGPipeline
 from preprocessing.document_class import Document
 from preprocessing.embeddings_class import MXBAIEmbedding
@@ -44,7 +45,7 @@ def process_document(doc: Document, is_text_based: bool = True):
             print("Failed to post HOCR file. Status code:", response.status_code)
     os.remove(doc.doc_path)
 
-def chat_summary(chat_id:str, response: str, user_prompt: str, prev_summary:str):
+def summarize_chat(chat_id:str, response: str, user_prompt: str, prev_summary:str):
     summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
     requests.post(CHAT_SUMMARY_URL, data = {"chat_id":chat_id, "summary": summary})
 # -------------------------------------------------- #
@@ -54,7 +55,7 @@ def chat_summary(chat_id:str, response: str, user_prompt: str, prev_summary:str)
 async def root():
     return {"message": "bookipedia"}
 
-@app.post("/add_document")
+@app.post("/add_document/{doc_id}")
 async def add_document(doc_id: str, url: str):
     # Send a GET request to the URL
     response = requests.get(url)
@@ -74,17 +75,20 @@ async def add_document(doc_id: str, url: str):
     is_text_based = doc.is_text_based_document()
     background_tasks.add_task(process_document(doc, is_text_based))
     if(is_text_based):
-        return {"message": "Document is text-based. Preprocessing started."}
+        return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
     else:
-        return {"message": "Document is not text-based. Applying OCR."}
+        return {"message": "Document is not text-based. Applying OCR.", "OCR": True}
 
-@app.get("/chat_response")
+@app.get("/chat_response/{chat_id}")
 async def chat_response(chat_id:str,
-                        user_prompt: str,
-                        chat_summary: str,
-                        chat: str,
-                        doc_ids: Annotated[list[str] | None, Query()] = None,
-                        enable_web_retrieval:bool = True):
+                        chat_params: ChatParams,
+                        enable_web_retrieval:bool = False):
+    # Extract parameters
+    user_prompt = chat_params.user_prompt
+    chat_summary = chat_params.chat_summary
+    chat = chat_params.chat
+    doc_ids = chat_params.doc_ids
+
     # Initialize RAG pipeline
     async def stream_generator():
         response = ""
@@ -96,11 +100,12 @@ async def chat_response(chat_id:str,
         yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
         # Add chat summary to background tasks
-        background_tasks.add_task(chat_summary(chat_id, response, user_prompt, chat_summary))
+        background_tasks.add_task(summarize_chat(chat_id, response, user_prompt, chat_summary))
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
 @app.get("/tts/")
-async def text_to_speech(text: str, speed: float = 1):
+async def text_to_speech(tts_text: TTSText, speed: float = 1):
+    text = tts_text.text
     def synthesize_audio():
         # Split the text into lines and synthesize each line
         lines = text.split('\n')
@@ -110,8 +115,8 @@ async def text_to_speech(text: str, speed: float = 1):
                 yield audio_bytes
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
-@app.get("/tts_pages/")
-async def pages_to_speech(doc_id: str, pages: Annotated[list[int] | None, Query()], speed: float = 1):
+@app.get("/tts_pages/{doc_id}")
+async def pages_to_speech(doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1):
     def synthesize_audio():
         # Split the text into lines and synthesize each line
         for page in pages:
@@ -124,8 +129,8 @@ async def pages_to_speech(doc_id: str, pages: Annotated[list[int] | None, Query(
     return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
 
 
-@app.get("/summarize_pages")
-async def summarize_pages(doc_id: str, pages: Annotated[list[int] | None, Query()]):
+@app.get("/summarize_pages/{doc_id}")
+async def summarize_pages(doc_id: str, pages: Annotated[list[int], Query()]):
     async def stream_generator():
         # Yield data stream
         async for chunk in await rag_pipeline.summarize_pages(doc_id, pages):

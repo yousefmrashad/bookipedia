@@ -1,9 +1,8 @@
 import requests
 
-url = "http://localhost:8000/text_summary"
+url = "http://localhost:8000/summarize_pages/1"
 
 params = {
-    "doc_id":"1",
     "pages":[2,3]
 }
 
