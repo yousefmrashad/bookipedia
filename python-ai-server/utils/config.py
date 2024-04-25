@@ -8,6 +8,7 @@ os.environ["USE_TORCH"] = "1"
 # Basics
 import torch
 from collections import Counter
+import math
 
 # Image Preprocessing
 import numpy as np
@@ -55,7 +56,7 @@ RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
 CHUNK_SIZE = 128
-CHUNK_OVERLAP = 32
+CHUNK_OVERLAP = 0
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
 # Auto Merging
@@ -75,4 +76,9 @@ RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
 
 # Database Name
 DB_NAME = "bookipedia"
+
+# Back-End URLs
+CHAT_SUMMARY_URL = "http://backend:3000/chat_summary"
+POST_HOCR_URL = "http://backend:3000/post_hocr"
+ACKNOWLEDGE_URL = "http://backend:3000/acknowledge"
 # -------------------------------------------------- #

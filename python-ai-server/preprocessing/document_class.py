@@ -1,26 +1,24 @@
 # Utils
 from root_config import *
 from utils.init import *
-
-# Modules
-from preprocessing.embeddings_class import AnglEEmbedding
 # ================================================== #
 
 class Document:
     def __init__(self, doc_path: str, doc_id: str):
         self.doc_path = doc_path
         self.doc_id = doc_id
-    # -------------------------------------------------- #
-    
-    def get_text_based_document(self):
         pages = pypdf.PdfReader(self.doc_path).pages
         for page in pages:
             if (page.extract_text().strip()):
-                return
-
+                self.text_based = True
+                break
+            else:
+                self.text_based = False
+    # -------------------------------------------------- #
+    
+    def get_text_based_document(self):
         from preprocessing.ocr import OCR
-        hocr_doc_path = OCR(self.doc_path).apply_ocr()
-        self.doc_path = hocr_doc_path
+        OCR(self.doc_path).apply_ocr()
     # -------------------------------------------------- #
     
     def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
@@ -67,9 +65,10 @@ class Document:
             collection.data.insert_many(objs)
     # -------------------------------------------------- #
     
-    def preprocess(self, client: WeaviateClient):
-        self.get_text_based_document()
+    def preprocess(self, client: WeaviateClient, embedder: Embeddings):
+        if (self.text_based):
+            self.get_text_based_document()
         self.load_and_split()
-        self.generate_embeddings(embedder=AnglEEmbedding())
+        self.generate_embeddings(embedder)
         self.store_in_db(client)
     # -------------------------------------------------- #

@@ -73,7 +73,7 @@ class WebResearchRetriever(BaseRetriever):
     search: DuckDuckGoSearchAPIWrapper = Field(..., description="DuckDuckGo Search API Wrapper")
     num_search_results: int = Field(1, description="Number of pages per DuckDuckGo search")
     text_splitter: TextSplitter = Field(
-        RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50),
+        RecursiveCharacterTextSplitter(chunk_size=480, chunk_overlap=32),
         description="Text splitter for splitting web pages into chunks",
     )
     url_database: List[str] = Field(
