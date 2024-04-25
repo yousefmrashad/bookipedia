@@ -18,7 +18,11 @@ voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_
                         '/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx.json',
                         use_cuda=False)
 
-app = FastAPI()
+app = FastAPI(
+    title="Bookipedia AI Server",
+    description="Bookipedia AI Server is an AI inference server for the Bookipedia application, which serves as an online library with a AI-powered reading assistant. The server utilizes state-of-the-art language models (LLMs), optical character recognition (OCR), and text-to-speech (TTS) features.",
+    version="0.0.1"
+)
 embedding_model=MXBAIEmbedding()
 client = DB().connect()
 rag_pipeline = RAGPipeline(embedding_model, client)
