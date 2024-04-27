@@ -7,7 +7,7 @@ class Document:
     def __init__(self, doc_path: str, doc_id: str):
         self.doc_path = doc_path
         self.doc_id = doc_id
-        self.text_based = calculate_imagebox_percentage(doc_path) < 0.75
+        self.text_based = calculate_imagebox_percentage(doc_path) < 0.5
     # -------------------------------------------------- #
     
     def get_text_based_document(self):
