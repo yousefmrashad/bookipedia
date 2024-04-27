@@ -17,10 +17,10 @@ import cv2 as cv
 # HOCR
 import PIL.Image
 from pikepdf import Pdf
-import re, pypdf
+import re, fitz
 
 # Langchain
-from langchain_community.document_loaders.pdf import PyPDFLoader
+from langchain_community.document_loaders.pdf import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings

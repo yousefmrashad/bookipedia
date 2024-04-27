@@ -7,13 +7,7 @@ class Document:
     def __init__(self, doc_path: str, doc_id: str):
         self.doc_path = doc_path
         self.doc_id = doc_id
-        pages = pypdf.PdfReader(self.doc_path).pages
-        for page in pages:
-            if (page.extract_text().strip()):
-                self.text_based = True
-                break
-            else:
-                self.text_based = False
+        self.text_based = calculate_imagebox_percentage(doc_path) < 0.5
     # -------------------------------------------------- #
     
     def get_text_based_document(self):
@@ -27,7 +21,7 @@ class Document:
                                                         length_function=count_tokens, separators=separators,
                                                         is_separator_regex=True)
         
-        self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
+        self.chunks = PyMuPDFLoader(self.doc_path).load_and_split(text_splitter)
         
         for chunk in self.chunks:
             chunk.metadata["source_id"] = self.doc_id
