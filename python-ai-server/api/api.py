@@ -112,7 +112,7 @@ async def text_to_speech(tts_text: TTSText, speed: float = 1):
             audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
             for audio_bytes in audio_stream:
                 yield audio_bytes
-    return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
+    return StreamingResponse(synthesize_audio(), media_type="audio/raw")
 
 @app.get("/tts_pages/{doc_id}")
 async def pages_to_speech(doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1):
@@ -125,7 +125,7 @@ async def pages_to_speech(doc_id: str, pages: Annotated[list[int], Query()], spe
                 audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
                 for audio_bytes in audio_stream:
                     yield audio_bytes
-    return StreamingResponse(synthesize_audio(), media_type="audio/x-wav")
+    return StreamingResponse(synthesize_audio(), media_type="audio/raw")
 
 
 @app.get("/summarize_pages/{doc_id}")
