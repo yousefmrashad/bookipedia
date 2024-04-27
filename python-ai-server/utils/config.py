@@ -74,6 +74,7 @@ MD_SEPARATORS = [
                 # by *three or more* of ***, ---, or ___, but this is not handled
                 "\n\n",
                 r"(?<=\w{2}\.\s)",
+                "\n",
                 " ",
                 "",
             ]
