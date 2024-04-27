@@ -4,10 +4,13 @@ from utils.init import *
 # ================================================== #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: str):
+    def __init__(self, doc_path: str, doc_id: str, lib_doc: bool = False):
         self.doc_path = doc_path
         self.doc_id = doc_id
-        self.text_based = calculate_imagebox_percentage(doc_path) < 0.5
+        if (lib_doc):
+            self.text_based = True
+        else:
+            self.text_based = calculate_imagebox_percentage(doc_path) < 0.5
     # -------------------------------------------------- #
     
     def get_text_based_document(self):
@@ -60,7 +63,7 @@ class Document:
     # -------------------------------------------------- #
     
     def preprocess(self, client: WeaviateClient, embedder: Embeddings):
-        if (self.text_based):
+        if not (self.text_based):
             self.get_text_based_document()
         self.load_and_split()
         self.generate_embeddings(embedder)

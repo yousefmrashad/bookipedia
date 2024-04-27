@@ -56,7 +56,7 @@ async def root():
     return {"message": "bookipedia"}
 
 @app.post("/add_document/{doc_id}")
-async def add_document(doc_id: str, url: str):
+async def add_document(doc_id: str, url: str, lib_doc: bool = False):
     # Send a GET request to the URL
     response = requests.get(url)
     # Check if the request was successful (status code 200)
@@ -71,7 +71,7 @@ async def add_document(doc_id: str, url: str):
         return {"message": "Failed to download file. Status code:", "status code": response.status_code}
 
     # Create a Document object and add it to the background tasks    
-    doc = Document(doc_path, doc_id)
+    doc = Document(doc_path, doc_id, lib_doc)
     background_tasks.add_task(process_document(doc))
     if(doc.text_based):
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
