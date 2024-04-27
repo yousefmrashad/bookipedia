@@ -7,10 +7,11 @@ class Document:
     def __init__(self, doc_path: str, doc_id: str, lib_doc: bool = False):
         self.doc_path = doc_path
         self.doc_id = doc_id
+        self.doc = fitz.open(doc_path)
         if (lib_doc):
             self.text_based = True
         else:
-            self.text_based = calculate_imagebox_percentage(doc_path) < 0.5
+            self.text_based = calculate_imagebox_percentage(self.doc) < 0.5
     # -------------------------------------------------- #
     
     def get_text_based_document(self):
@@ -18,16 +19,21 @@ class Document:
         OCR(self.doc_path).apply_ocr()
     # -------------------------------------------------- #
     
-    def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=SEPARATORS):
-
+    def load_and_split(self, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, separators=MD_SEPARATORS):
+        
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap,
                                                         length_function=count_tokens, separators=separators,
                                                         is_separator_regex=True)
-        
-        self.chunks = PyMuPDFLoader(self.doc_path).load_and_split(text_splitter)
-        
-        for chunk in self.chunks:
-            chunk.metadata["source_id"] = self.doc_id
+        md_texts = []
+        metadatas = []
+        for i in range(self.doc.page_count):
+            metadata = {}
+            md_texts.append(to_markdown(self.doc, [i]))
+            metadata['source_id'] = self.doc_id
+            metadata['page'] = i
+            metadatas.append(metadata)
+        # chunks = PyMuPDFLoader(text_pdf).load_and_split(text_splitter)
+        self.chunks = text_splitter.create_documents(md_texts, metadatas)
     # -------------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):

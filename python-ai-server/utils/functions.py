@@ -73,8 +73,7 @@ def find_overlap(text1: str, text2: str) -> int:
             return m
     return j
 
-def calculate_imagebox_percentage(pdf_path):
-    doc = fitz.open(pdf_path)
+def calculate_imagebox_percentage(doc: fitz.Document) -> float:
     total_imagebox_area = 0
     total_page_area = 0
     for page in doc:

@@ -17,10 +17,11 @@ import cv2 as cv
 # HOCR
 import PIL.Image
 from pikepdf import Pdf
-import re, fitz
+import re
 
-# Langchain
-from langchain_community.document_loaders.pdf import PyMuPDFLoader
+# Document Loading
+import fitz
+from pdf4llm import to_markdown
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
@@ -56,7 +57,26 @@ RECOGNITION_MODEL = "crnn_mobilenet_v3_large"
 
 # Document Load
 CHUNK_SIZE = 128
-CHUNK_OVERLAP = 0
+CHUNK_OVERLAP = 32
+MD_SEPARATORS = [
+                # First, try to split along Markdown headings (starting with level 2)
+                "\n#{1,6} ",
+                # Note the alternative syntax for headings (below) is not handled here
+                # Heading level 2
+                # ---------------
+                # End of code block
+                "```\n",
+                # Horizontal lines
+                "\n\\*\\*\\*+\n",
+                "\n---+\n",
+                "\n___+\n",
+                # Note that this splitter doesn't handle horizontal lines defined
+                # by *three or more* of ***, ---, or ___, but this is not handled
+                "\n\n",
+                r"(?<=\w{2}\.\s)",
+                " ",
+                "",
+            ]
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
 
 # Auto Merging
