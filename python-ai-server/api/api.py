@@ -31,23 +31,27 @@ background_tasks = BackgroundTasks()
 # -------------------------------------------------- #
 
 # Background Tasks
-def process_document(doc: Document):
+def process_document(doc: Document, doc_id: str):
     doc.preprocess(client, embedding_model)
     if doc.text_based:
-        # Delete the file named doc_id
-        requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document preprocessing completed."})
+        requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
     else:
         with open(doc.doc_path, 'rb') as file:
-            response = requests.post(POST_HOCR_URL, data = file, stream = True)
+            response = requests.post(POST_HOCR_URL + doc_id, files = {'file': file})
         if response.status_code == 200:
-            requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document OCR and preprocessing completed."})
+            requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
+            print("HOCR file posted successfully.")
         else:
-            print("Failed to post HOCR file. Status code:", response.status_code)
+            print(f"Failed to post HOCR file. Status code:{response.status_code} Text:{response.text}")
     os.remove(doc.doc_path)
 
 def summarize_chat(chat_id:str, response: str, user_prompt: str, prev_summary:str):
-    summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
-    requests.post(CHAT_SUMMARY_URL, data = {"chat_id":chat_id, "summary": summary})
+    chat_summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
+    response = requests.patch(CHAT_SUMMARY_URL + chat_id, json = {"chat_summary": chat_summary})
+    if response.status_code == 202:
+        print("Chat summary updated successfully.")
+    else:
+        print("Failed to update chat summary. Status code:", response.status_code)
 # -------------------------------------------------- #
 
 # Endpoints
@@ -58,7 +62,7 @@ async def root():
 @app.post("/add_document/{doc_id}")
 async def add_document(doc_id: str, url: str, lib_doc: bool = False):
     # Send a GET request to the URL
-    response = requests.get(url)
+    response = requests.get(url, stream = True)
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Open the file in binary write mode and write the contents of the response to it
@@ -72,7 +76,7 @@ async def add_document(doc_id: str, url: str, lib_doc: bool = False):
 
     # Create a Document object and add it to the background tasks    
     doc = Document(doc_path, doc_id, lib_doc)
-    background_tasks.add_task(process_document(doc))
+    background_tasks.add_task(process_document(doc, doc_id))
     if(doc.text_based):
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
     else:

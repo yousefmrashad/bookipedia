@@ -80,10 +80,13 @@ RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
 DB_NAME = "bookipedia"
 
 # TTS Model Paths
-PIPER_MODEL_PATH = "~/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx"
+PIPER_MODEL_PATH = "[Path to Piper Model]"
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
-CHAT_SUMMARY_URL = "http://backend:3000/chat_summary"
-POST_HOCR_URL = "http://backend:3000/post_hocr"
-ACKNOWLEDGE_URL = "http://backend:3000/acknowledge"
+# Back-End URLs
+BACKEND_URL = "https://bookipedia-backend-pr-72.onrender.com/ai-api/"
+# FILE_URL = BACKEND_URL + "file/"
+CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
+POST_HOCR_URL = BACKEND_URL + "ocr-file/"
+ACKNOWLEDGE_URL = BACKEND_URL + "acknowledge/"
 # -------------------------------------------------- #
