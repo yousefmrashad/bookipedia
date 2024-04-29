@@ -21,11 +21,11 @@ class AnglEEmbedding(Embeddings):
         return self.model.encode(text).squeeze().tolist()
 # -------------------------------------------------- #
     
-# MXBAIEmbedding Model
-class MXBAIEmbedding(Embeddings):
+# HFEmbedding Model
+class HFEmbedding(Embeddings):
     def __init__(self, model_name=EMBEDDING_MODEL_NAME,
                 prompt=RETRIEVAL_PROMPT):
-        self.model = SentenceTransformer(model_name).cuda()
+        self.model = SentenceTransformer(model_name, trust_remote_code=True).cuda()
         self.prompt = prompt
 
     def embed_documents(self, texts: list[str]):

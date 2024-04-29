@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from bodies import *
 from RAG.rag_pipeline import RAGPipeline
 from preprocessing.document_class import Document
-from preprocessing.embeddings_class import MXBAIEmbedding
+from preprocessing.embeddings_class import HFEmbedding
 from utils.db_config import DB
 from piper import PiperVoice
 import requests
@@ -15,16 +15,16 @@ import json
 # ================================================== #
 
 #Initializations
-voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx',
-                        '/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx.json',
+voice = PiperVoice.load(PIPER_MODEL_PATH,
+                        PIPER_CONFIG_PATH,
                         use_cuda=False)
 
 app = FastAPI(
     title="Bookipedia AI Server",
     description="Bookipedia AI Server is an AI inference server for the Bookipedia application, which serves as an online library with a AI-powered reading assistant. The server utilizes state-of-the-art language models (LLMs), optical character recognition (OCR), and text-to-speech (TTS) features.",
-    version="0.0.1"
+    version="0.0.3"
 )
-embedding_model=MXBAIEmbedding()
+embedding_model=HFEmbedding()
 client = DB().connect()
 rag_pipeline = RAGPipeline(embedding_model, client)
 background_tasks = BackgroundTasks()
