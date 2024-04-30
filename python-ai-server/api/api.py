@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from bodies import *
 from RAG.rag_pipeline import RAGPipeline
 from preprocessing.document_class import Document
-from preprocessing.embeddings_class import MXBAIEmbedding
+from preprocessing.embeddings_class import HFEmbedding
 from utils.db_config import DB
 from piper import PiperVoice
 import requests
@@ -15,39 +15,47 @@ import json
 # ================================================== #
 
 #Initializations
-voice = PiperVoice.load('/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx',
-                        '/home/yousef/bookipedia/python-ai-server/test-piper/en_US-amy-medium.onnx.json',
+voice = PiperVoice.load(PIPER_MODEL_PATH,
+                        PIPER_CONFIG_PATH,
                         use_cuda=False)
 
 app = FastAPI(
     title="Bookipedia AI Server",
     description="Bookipedia AI Server is an AI inference server for the Bookipedia application, which serves as an online library with a AI-powered reading assistant. The server utilizes state-of-the-art language models (LLMs), optical character recognition (OCR), and text-to-speech (TTS) features.",
-    version="0.0.1"
+    version="0.0.3"
 )
-embedding_model=MXBAIEmbedding()
+embedding_model=HFEmbedding()
 client = DB().connect()
 rag_pipeline = RAGPipeline(embedding_model, client)
 background_tasks = BackgroundTasks()
 # -------------------------------------------------- #
 
 # Background Tasks
-def process_document(doc: Document):
-    doc.preprocess(client, embedding_model)
+def process_document(doc: Document, doc_id: str):
     if doc.text_based:
-        # Delete the file named doc_id
-        requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document preprocessing completed."})
+        doc.process_document(embedding_model, client)
+        requests.patch(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
+        print("Document preprocessed successfully.")
     else:
+        doc.get_text_based_document()
         with open(doc.doc_path, 'rb') as file:
-            response = requests.post(POST_HOCR_URL, data = file, stream = True)
-        if response.status_code == 200:
-            requests.post(ACKNOWLEDGE_URL, data = {"doc_id": doc.doc_id, "messge": "Document OCR and preprocessing completed."})
+            response = requests.post(POST_HOCR_URL + doc_id, files = {'file':(file.name, file, 'application/pdf')})
+        if response.status_code == 202:
+            doc.doc_id = response.json()['file_id']
+            doc.process_document(embedding_model, client) 
+            requests.patch(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
+            print("HOCR file posted successfully.")
         else:
-            print("Failed to post HOCR file. Status code:", response.status_code)
+            print(f"Failed to post HOCR file. Status code:{response.status_code} Text:{response.text}")
     os.remove(doc.doc_path)
 
 def summarize_chat(chat_id:str, response: str, user_prompt: str, prev_summary:str):
-    summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
-    requests.post(CHAT_SUMMARY_URL, data = {"chat_id":chat_id, "summary": summary})
+    chat_summary = rag_pipeline.generate_chat_summary(response, user_prompt, prev_summary)
+    response = requests.patch(CHAT_SUMMARY_URL + chat_id, json = {"chat_summary": chat_summary})
+    if response.status_code == 202:
+        print("Chat summary updated successfully.")
+    else:
+        print("Failed to update chat summary. Status code:", response.status_code)
 # -------------------------------------------------- #
 
 # Endpoints
@@ -58,7 +66,7 @@ async def root():
 @app.post("/add_document/{doc_id}")
 async def add_document(doc_id: str, url: str, lib_doc: bool = False):
     # Send a GET request to the URL
-    response = requests.get(url)
+    response = requests.get(url, stream = True)
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Open the file in binary write mode and write the contents of the response to it
@@ -72,11 +80,18 @@ async def add_document(doc_id: str, url: str, lib_doc: bool = False):
 
     # Create a Document object and add it to the background tasks    
     doc = Document(doc_path, doc_id, lib_doc)
-    background_tasks.add_task(process_document(doc))
+    background_tasks.add_task(process_document(doc, doc_id))
     if(doc.text_based):
+        print("Document is text-based. Preprocessing started.")
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
     else:
+        print("Document is not text-based. Applying OCR.")
         return {"message": "Document is not text-based. Applying OCR.", "OCR": True}
+
+@app.delete("/delete_document/{doc_id}")
+async def delete_document(doc_id: str):
+    rag_pipeline.db.delete(doc_id)
+    return {"message": "Document deleted successfully."}
 
 @app.get("/chat_response/{chat_id}")
 async def chat_response(chat_id:str,

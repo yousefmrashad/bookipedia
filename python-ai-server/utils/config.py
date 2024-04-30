@@ -90,17 +90,25 @@ FETCHING_LIMIT = 1024
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-EMBEDDING_MODEL_NAME = "mixedbread-ai/mxbai-embed-large-v1"
+# EMBEDDING_MODEL_NAME = "mixedbread-ai/mxbai-embed-large-v1"
+EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
 RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
+# RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 
 # Database Name
 DB_NAME = "bookipedia"
 
+# TTS Model Paths
+PIPER_MODEL_PATH = "[Path to Piper Model]"
+PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
+
 # Back-End URLs
-CHAT_SUMMARY_URL = "http://backend:3000/chat_summary"
-POST_HOCR_URL = "http://backend:3000/post_hocr"
-ACKNOWLEDGE_URL = "http://backend:3000/acknowledge"
+BACKEND_URL = "https://bookipedia-backend-pr-72.onrender.com/ai-api/"
+# FILE_URL = BACKEND_URL + "file/"
+CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
+POST_HOCR_URL = BACKEND_URL + "ocr-file/"
+ACKNOWLEDGE_URL = BACKEND_URL + "ai-applied/"
 # -------------------------------------------------- #

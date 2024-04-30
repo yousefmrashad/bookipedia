@@ -85,7 +85,7 @@ class Weaviate(VectorStore):
         
     # Re-rank Results
     def rerank_docs(self, query: str, docs: list[Document], top_k :int) -> list[Document]:
-        model = CrossEncoder(RERANKER_MODEL_NAME)
+        model = CrossEncoder(RERANKER_MODEL_NAME, trust_remote_code=True)
 
         # Prepare the query-document pairs for the model
         documents = [doc.page_content for doc in docs]
