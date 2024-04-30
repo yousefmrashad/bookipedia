@@ -1,6 +1,9 @@
 # Using PyTorch
 import os
 os.environ["USE_TORCH"] = "1"
+# Root Path
+import sys
+root_path = os.path.dirname(os.path.dirname(__file__))
 # -------------------------------------------------- #
 
 # -- Modules -- #
@@ -80,7 +83,7 @@ RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
 DB_NAME = "bookipedia"
 
 # TTS Model Paths
-PIPER_MODEL_PATH = "[Path to Piper Model]"
+PIPER_MODEL_PATH = os.path.join(root_path, "models/en_US-amy-medium.onnx")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
