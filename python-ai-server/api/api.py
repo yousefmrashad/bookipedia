@@ -32,13 +32,16 @@ background_tasks = BackgroundTasks()
 
 # Background Tasks
 def process_document(doc: Document, doc_id: str):
-    doc.preprocess(client, embedding_model)
     if doc.text_based:
+        doc.process_document(client, embedding_model)
         requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
     else:
+        doc.get_text_based_document()
         with open(doc.doc_path, 'rb') as file:
             response = requests.post(POST_HOCR_URL + doc_id, files = {'file':(file.name, file, 'application/pdf')})
         if response.status_code == 202:
+            doc.doc_id = response.json()['file_id']
+            doc.process_document(embedding_model, client) 
             requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
             print("HOCR file posted successfully.")
         else:
