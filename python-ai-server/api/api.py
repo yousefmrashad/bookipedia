@@ -33,8 +33,9 @@ background_tasks = BackgroundTasks()
 # Background Tasks
 def process_document(doc: Document, doc_id: str):
     if doc.text_based:
-        doc.process_document(client, embedding_model)
-        requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
+        doc.process_document(embedding_model, client)
+        requests.patch(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
+        print("Document preprocessed successfully.")
     else:
         doc.get_text_based_document()
         with open(doc.doc_path, 'rb') as file:
@@ -42,7 +43,7 @@ def process_document(doc: Document, doc_id: str):
         if response.status_code == 202:
             doc.doc_id = response.json()['file_id']
             doc.process_document(embedding_model, client) 
-            requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
+            requests.patch(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
             print("HOCR file posted successfully.")
         else:
             print(f"Failed to post HOCR file. Status code:{response.status_code} Text:{response.text}")
@@ -81,11 +82,13 @@ async def add_document(doc_id: str, url: str, lib_doc: bool = False):
     doc = Document(doc_path, doc_id, lib_doc)
     background_tasks.add_task(process_document(doc, doc_id))
     if(doc.text_based):
+        print("Document is text-based. Preprocessing started.")
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
     else:
+        print("Document is not text-based. Applying OCR.")
         return {"message": "Document is not text-based. Applying OCR.", "OCR": True}
 
-@app.post("/delete_document/{doc_id}")
+@app.delete("/delete_document/{doc_id}")
 async def delete_document(doc_id: str):
     rag_pipeline.db.delete(doc_id)
     return {"message": "Document deleted successfully."}

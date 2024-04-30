@@ -88,5 +88,5 @@ BACKEND_URL = "https://bookipedia-backend-pr-72.onrender.com/ai-api/"
 # FILE_URL = BACKEND_URL + "file/"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"
-ACKNOWLEDGE_URL = BACKEND_URL + "acknowledge/"
+ACKNOWLEDGE_URL = BACKEND_URL + "ai-applied/"
 # -------------------------------------------------- #
