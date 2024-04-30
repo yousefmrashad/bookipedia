@@ -22,6 +22,7 @@ import re
 # Document Loading
 import fitz
 from pdf4llm import to_markdown
+from langchain.document_loaders.pdf import PyPDFLoader 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
