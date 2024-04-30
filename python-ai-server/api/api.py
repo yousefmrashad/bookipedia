@@ -85,6 +85,11 @@ async def add_document(doc_id: str, url: str, lib_doc: bool = False):
     else:
         return {"message": "Document is not text-based. Applying OCR.", "OCR": True}
 
+@app.post("/delete_document/{doc_id}")
+async def delete_document(doc_id: str):
+    rag_pipeline.db.delete(doc_id)
+    return {"message": "Document deleted successfully."}
+
 @app.get("/chat_response/{chat_id}")
 async def chat_response(chat_id:str,
                         chat_params: ChatParams,
