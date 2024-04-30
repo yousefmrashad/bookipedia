@@ -37,8 +37,8 @@ def process_document(doc: Document, doc_id: str):
         requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document preprocessing completed."})
     else:
         with open(doc.doc_path, 'rb') as file:
-            response = requests.post(POST_HOCR_URL + doc_id, files = {'file': file})
-        if response.status_code == 200:
+            response = requests.post(POST_HOCR_URL + doc_id, files = {'file':(file.name, file, 'application/pdf')})
+        if response.status_code == 202:
             requests.post(ACKNOWLEDGE_URL + doc.doc_id, json = {"messge": "Document OCR and preprocessing completed."})
             print("HOCR file posted successfully.")
         else:
