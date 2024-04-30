@@ -12,6 +12,7 @@ root_path = os.path.dirname(os.path.dirname(__file__))
 import torch
 from collections import Counter
 import math
+import re 
 
 # Image Preprocessing
 import numpy as np

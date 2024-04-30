@@ -28,6 +28,9 @@ class Document:
         
         for chunk in self.chunks:
             chunk.metadata["source_id"] = self.doc_id
+        # Filtering Chunks:
+        english_letter_regex = r'[a-zA-Z]'
+        self.chunks= [chunk for chunk in self.chunks if re.search(english_letter_regex, chunk)]
     # -------------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):
