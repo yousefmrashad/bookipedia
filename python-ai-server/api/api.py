@@ -27,7 +27,6 @@ app = FastAPI(
 embedding_model=HFEmbedding()
 client = DB().connect()
 rag_pipeline = RAGPipeline(embedding_model, client)
-background_tasks = BackgroundTasks()
 # -------------------------------------------------- #
 
 # Background Tasks
@@ -64,7 +63,7 @@ async def root():
     return {"message": "bookipedia"}
 
 @app.post("/add_document/{doc_id}")
-async def add_document(doc_id: str, url: str, lib_doc: bool = False):
+async def add_document(background_tasks: BackgroundTasks, doc_id: str, url: str, lib_doc: bool = False):
     # Send a GET request to the URL
     response = requests.get(url, stream = True)
     # Check if the request was successful (status code 200)
@@ -80,7 +79,7 @@ async def add_document(doc_id: str, url: str, lib_doc: bool = False):
 
     # Create a Document object and add it to the background tasks    
     doc = Document(doc_path, doc_id, lib_doc)
-    background_tasks.add_task(process_document(doc, doc_id))
+    background_tasks.add_task(process_document, doc, doc_id)
     if(doc.text_based):
         print("Document is text-based. Preprocessing started.")
         return {"message": "Document is text-based. Preprocessing started.", "OCR": False}
@@ -94,7 +93,8 @@ async def delete_document(doc_id: str):
     return {"message": "Document deleted successfully."}
 
 @app.get("/chat_response/{chat_id}")
-async def chat_response(chat_id:str,
+async def chat_response(background_tasks: BackgroundTasks,
+                        chat_id:str,
                         chat_params: ChatParams,
                         enable_web_retrieval:bool = False):
     # Extract parameters
@@ -114,7 +114,7 @@ async def chat_response(chat_id:str,
         yield b'\n\nSources: '
         yield json.dumps(rag_pipeline.metadata).encode('utf-8') + b'\n'
         # Add chat summary to background tasks
-        background_tasks.add_task(summarize_chat(chat_id, response, user_prompt, chat_summary))
+        background_tasks.add_task(summarize_chat, chat_id, response, user_prompt, chat_summary)
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
 @app.get("/tts/")
