@@ -39,8 +39,8 @@ class Document:
                                                             is_separator_regex=True)
             self.chunks = PyPDFLoader(self.doc_path).load_and_split(text_splitter)
         
-            for chunk in self.chunks:
-                chunk.metadata["source_id"] = self.doc_id
+        for chunk in self.chunks:
+            chunk.metadata["source_id"] = self.doc_id
     # -------------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):
