@@ -1,11 +1,8 @@
 # Utils
 from root_config import *
 from utils.init import *
-from utils.hocr import HocrTransform
 
-# Modules
-from doctr.models import ocr_predictor
-from doctr.io import DocumentFile, Document
+from utils.hocr import HocrTransform
 # ================================================== #
 
 # OCR

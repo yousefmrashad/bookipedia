@@ -1,4 +1,4 @@
 __pycache__
-python-ai-server/env
-python-ai-server/test*
-python-ai-server/root_config.py
+/env
+/test*
+/root_config.py

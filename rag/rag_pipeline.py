@@ -1,15 +1,10 @@
 from root_config import *
 from utils.init import *
+
+from rag.web_weaviate import WebWeaviate
+from rag.web_researcher import WebResearchRetriever
+from rag.weaviate_retriever import Weaviate
 # ================================================== #
-from asyncio import gather
-from utils.db_config import DB
-from RAG.web_weaviate import WebWeaviate
-from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
-from RAG.web_researcher import WebResearchRetriever
-from RAG.weaviate_class import Weaviate
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 
 class RAGPipeline:
     
