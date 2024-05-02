@@ -95,7 +95,6 @@ class Weaviate(VectorStore):
         indices = [res['corpus_id'] for res in results]
         docs = [docs[i] for i in indices]
         return docs
-
     # -------------------------------------------------- #
 
     # Auto-Merge
