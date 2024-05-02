@@ -71,7 +71,7 @@ from weaviate.collections.classes.internal import QueryReturn, Object, ReturnPro
 
 # -- Constants -- #
 
-OPEN_AI_KEY = "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"
+OPEN_AI_KEY = "[OpenAI API Key]"
 
 # OCR
 DETECTION_MODEL = "db_mobilenet_v3_large"
@@ -123,11 +123,11 @@ RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 DB_NAME = "bookipedia"
 
 # TTS Model Paths
-PIPER_MODEL_PATH = os.path.join(root_path, "models/en_US-amy-medium.onnx")
+PIPER_MODEL_PATH = os.path.join(root_path, "models/[model_name.onnx]")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
-BACKEND_URL = "https://bookipedia-backend-pr-72.onrender.com/ai-api/"
+BACKEND_URL = "[URL to Backend API]"
 # FILE_URL = BACKEND_URL + "file/"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"
