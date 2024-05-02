@@ -13,6 +13,20 @@ import torch
 from collections import Counter
 import math
 
+# API
+import requests
+import json
+from fastapi import FastAPI, Query, BackgroundTasks
+from fastapi.responses import StreamingResponse
+from asyncio import gather
+
+# OCR
+from doctr.models import ocr_predictor
+from doctr.io import DocumentFile, Document
+
+# TTS
+from piper import PiperVoice
+
 # Image Preprocessing
 import numpy as np
 import cv2 as cv
@@ -24,6 +38,7 @@ import re
 
 # Document Loading
 import fitz
+import tiktoken
 from pdf4llm import to_markdown
 from langchain.document_loaders.pdf import PyPDFLoader 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -41,10 +56,13 @@ from langchain.vectorstores.utils import maximal_marginal_relevance
 from sentence_transformers import CrossEncoder
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
-# OpenAI
-import tiktoken
+# LLM
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 # Type Hinting
+from typing import Annotated
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from weaviate import WeaviateClient

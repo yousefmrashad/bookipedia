@@ -1,17 +1,12 @@
+# Utils
 from root_config import *
 from utils.init import *
-# ================================================== #
-from typing import Annotated
-from fastapi import FastAPI, Query, BackgroundTasks
-from fastapi.responses import StreamingResponse
-from bodies import *
-from RAG.rag_pipeline import RAGPipeline
-from preprocessing.document_class import Document
-from preprocessing.embeddings_class import HFEmbedding
+
+from schemas import *
 from utils.db_config import DB
-from piper import PiperVoice
-import requests
-import json
+from preprocessing.document import Document
+from preprocessing.embedding import HFEmbedding
+from rag.rag_pipeline import RAGPipeline
 # ================================================== #
 
 #Initializations
