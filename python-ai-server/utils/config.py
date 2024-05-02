@@ -77,8 +77,8 @@ EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
-RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
-# RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
+# RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
+RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 
 # Database Name
 DB_NAME = "bookipedia"

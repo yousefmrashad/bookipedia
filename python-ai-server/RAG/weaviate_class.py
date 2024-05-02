@@ -2,7 +2,6 @@
 from root_config import *
 from utils.init import *
 # ================================================== #
-from transformers import AutoModelForSequenceClassification
 
 class Weaviate(VectorStore):
     def __init__(self, client: WeaviateClient, embedder: Embeddings) -> None:
@@ -86,28 +85,16 @@ class Weaviate(VectorStore):
         
     # Re-rank Results
     def rerank_docs(self, query: str, docs: list[Document], top_k :int) -> list[Document]:
+        model = CrossEncoder(RERANKER_MODEL_NAME, trust_remote_code=True)
+
         # Prepare the query-document pairs for the model
         documents = [doc.page_content for doc in docs]
-        if RERANKER_MODEL_NAME=='jinaai/jina-reranker-v1-turbo-en':
-            model = AutoModelForSequenceClassification.from_pretrained(RERANKER_MODEL_NAME, num_labels=1, trust_remote_code=True)
-            documents = [[query, doc] for doc in documents]
-            scores = model.compute_score(documents)
-            #  Sorting and returning top_k documents : 
-            #  1- Combine docs and scores into a list of tuples
-            doc_score_pairs = list(zip(docs, scores))
-            #  2- Sort the list of tuples in decremental order based on scores
-            sorted_doc_score_pairs = sorted(doc_score_pairs, key=lambda x: x[1], reverse=True)
-            #  3- Extract the top k documents
-            return [pair[0] for pair in sorted_doc_score_pairs[:top_k]]
-        else:
-            model = CrossEncoder(RERANKER_MODEL_NAME)
-            # Rank docs against query
-            results = model.rank(query, documents, return_documents= False, top_k = top_k)
-            indices = [res['corpus_id'] for res in results]
-            docs = [docs[i] for i in indices]
-            return docs
-
-
+        
+        # Rank docs against query
+        results = model.rank(query, documents, return_documents= False, top_k = top_k)
+        indices = [res['corpus_id'] for res in results]
+        docs = [docs[i] for i in indices]
+        return docs
     # -------------------------------------------------- #
 
     # Auto-Merge
