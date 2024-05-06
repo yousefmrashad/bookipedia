@@ -101,8 +101,12 @@ class RAGPipeline:
             
             return content, metadata
         
-        def generate_web_context(retrieval_query: str):
-            docs = self.web_retriever.invoke(retrieval_query)
+        def generate_web_context(retrieval_query: str, rerank: bool = True):
+            if rerank:
+                docs = self.web_retriever.invoke(retrieval_query, k = 3)
+                docs = self.db.rerank_docs(retrieval_query, docs, top_k= 5)
+            else:    
+                docs = self.web_retriever.invoke(retrieval_query, k = 2)
 
             content = [doc.page_content for doc in docs]
             metadata = [doc.metadata['source'] for doc in docs]
