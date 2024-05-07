@@ -129,8 +129,8 @@ class RAGPipeline:
         
         # Combine the contexts
         context = vecdb_context + web_context
-        metadata = vecdb_metadata + web_metadata
-                
+        metadata = {"doc_sources": vecdb_metadata, "web_sources": web_metadata}
+
         return context, metadata
     
 
@@ -154,10 +154,7 @@ class RAGPipeline:
         # Return the content of the chat summary
         return chat_summary.content
 
-    def generate_answer(self, user_prompt: str, chat_summary: str, chat: str,doc_ids: list[str] = None, enable_web_retrieval=True):
-        
-        self.context, self.metadata = self.generate_context(user_prompt=user_prompt, chat_summary= chat_summary, doc_ids= doc_ids, enable_web_retrieval= enable_web_retrieval)
-        
+    def generate_answer(self, user_prompt: str, chat: str, context: list[str]):
         
         QA_PROMPT = ChatPromptTemplate.from_template(
             """You are an assistant tasked with answering user question.
@@ -171,4 +168,4 @@ class RAGPipeline:
 
         qa_chain = QA_PROMPT | self.llm | StrOutputParser()
 
-        return qa_chain.astream({"chat": chat, "user_prompt": user_prompt, "context": ('\n'.join(self.context))})
+        return qa_chain.astream({"chat": chat, "user_prompt": user_prompt, "context": ('\n'.join(context))})
