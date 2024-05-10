@@ -103,16 +103,15 @@ async def chat_response(background_tasks: BackgroundTasks,
 
     # Generate response
     async def stream_generator():
-        response = '{"response": "'
+        response = ''
         yield response.encode('utf-8')
         # Yield data stream
         async for chunk in rag_pipeline.generate_answer(user_prompt, chat, context):
             response += chunk
-            chunk = re.sub(r'\n\n', r'\\n\\n', chunk)
             yield chunk.encode('utf-8')
         # Yield metadata as first part of the stream
-        yield b'",\n\n"sources": '
-        yield json.dumps(metadata).encode('utf-8') + b'}\n'
+        yield b'\n\n[sources]\n\n"sources": '
+        yield json.dumps(metadata).encode('utf-8')
         # Add chat summary to background tasks
         background_tasks.add_task(summarize_chat, chat_id, response, user_prompt, chat_summary)
     return StreamingResponse(stream_generator(), media_type="text/plain")
