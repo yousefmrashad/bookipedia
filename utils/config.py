@@ -12,12 +12,11 @@ root_path = os.path.dirname(os.path.dirname(__file__))
 import torch
 from collections import Counter
 import math
+import logging
 
 # API
 import requests
 import json
-from fastapi import FastAPI, Query, BackgroundTasks
-from fastapi.responses import StreamingResponse
 from asyncio import gather
 
 # OCR
