@@ -206,7 +206,6 @@ class WebResearchRetriever(BaseRetriever):
             self.url_database.extend(new_urls)
 
         # Search for relevant splits
-        # TODO: make this async
         logger.info("Grabbing most relevant splits from urls...")
         docs = []
         for query in questions:
