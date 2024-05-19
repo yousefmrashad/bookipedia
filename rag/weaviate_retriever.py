@@ -138,10 +138,10 @@ class Weaviate(VectorStore):
     # -------------------------------------------------- #
 
     # -- Auto-Merge [Help Functions] -- # 
-    def merge_chunks(self, objects: list[Object], l: str) -> list[Object]:
+    def merge_chunks(self, objects: list[Object], level: str) -> list[Object]:
         object_dict = {}
         for obj in objects:
-            key = obj.properties[l]
+            key = obj.properties[level]
             if (key in object_dict):
                 object_dict[key]["text"] += (" " + obj.properties["text"])
             else:
