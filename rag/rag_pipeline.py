@@ -14,8 +14,8 @@ class RAGPipeline:
         self.client = client
         self.db = Weaviate(self.client, self.embedding_model)
         self.web_db = WebWeaviate(self.client, embedder=self.embedding_model)
-        self.search =  DuckDuckGoSearchAPIWrapper(backend='html')
-        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db , llm=self.llm,  search=self.search)
+        self.search = DuckDuckGoSearchAPIWrapper(backend='html')
+        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db, llm=self.llm, search=self.search)
 
     def get_page_text(self, doc_id: str, page_no: int) -> str:
         col = self.client.collections.get("bookipedia")
