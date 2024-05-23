@@ -4,10 +4,11 @@ from utils.init import *
 # ================================================== #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: str, lib_doc: bool = False):
+    def __init__(self, doc_path: str, doc_id: str, lib_doc=False):
         self.doc_path = doc_path
         self.doc_id = doc_id
         self.doc = fitz.open(doc_path)
+
         if (lib_doc):
             self.text_based = True
         else:
@@ -42,9 +43,8 @@ class Document:
         for chunk in self.chunks:
             chunk.metadata["source_id"] = self.doc_id
             
-        # Filtering Chunks:
-        english_letter_regex = r'[a-zA-Z]'
-        self.chunks= [chunk for chunk in self.chunks if re.search(english_letter_regex, chunk)]
+        # Filtering chunks
+        self.chunks = [c for c in self.chunks if (re.search(r"[a-zA-Z]", c.page_content))]
     # -------------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):

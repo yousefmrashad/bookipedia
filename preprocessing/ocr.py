@@ -10,6 +10,8 @@ class OCR:
     def __init__(self, doc_path: str, scale=5):
         self.doc_path = doc_path
         self.scale = scale
+        
+        from doctr.io import DocumentFile
         self.docs = DocumentFile.from_pdf(doc_path, scale=scale)
     # -------------------------------------------------- #
 
@@ -80,13 +82,13 @@ class OCR:
     # -------------------------------------------------- #
 
     # OCR
-    def ocr(self) -> Document:
+    def ocr(self):
+        from doctr.models import ocr_predictor
         model = ocr_predictor(det_arch=DETECTION_MODEL, reco_arch=RECOGNITION_MODEL,
                               assume_straight_pages=True, pretrained=True,
                               export_as_straight_boxes=True).cuda()
         
-        result = model.forward(self.docs)
-        self.result: Document = result
+        self.result = model.forward(self.docs)
     # -------------------------------------------------- #
 
     # HOCR

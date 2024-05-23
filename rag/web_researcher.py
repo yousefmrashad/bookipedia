@@ -1,12 +1,8 @@
-# Utils
-from root_config import *
-from utils.init import *
-# ================================================== #
-
 import logging
 import re
 from typing import List, Optional
 
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain_community.document_loaders.async_html import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
 from langchain_community.llms.llamacpp import LlamaCpp

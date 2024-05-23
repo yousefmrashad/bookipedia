@@ -1,21 +1,20 @@
 # Config
 from root_config import *
 from utils.config import *
-
-# ================================================== #
+# ===================================================================== #
 
 # -- Helpers -- #
 
 # OCR
 def map_values(img, in_min, in_max, out_min, out_max):
     return (img - in_min) * ((out_max - out_min) / (in_max - in_min)) + out_min
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Document Loader
 def count_tokens(text: str) -> int:
-    encoding = tiktoken.get_encoding("cl100k_base")
+    encoding = tiktoken.get_encoding(encoding_name=ENCODING_NAME)
     return len(encoding.encode(text))
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Retrieving Filters
 def id_filter(source_id: str):
@@ -26,8 +25,26 @@ def ids_filter(source_ids: list[str]):
 
 def page_filter(page_no: int):
     return wvc.query.Filter.by_property("page_no").equal(page_no)
+# --------------------------------------------------------------------- #
 
-# -------------------------------------------------- #
+# Another fucking option to merge chunks
+def merge_chunks_v2(chunks: list[str]) -> str:
+    encoder = tiktoken.get_encoding(encoding_name=ENCODING_NAME)
+    chunks_tokens = [encoder.encode(c) for c in chunks]
+
+    merged_tokens = [chunks_tokens[0]]
+    for i in range(1, len(chunks)):
+        ov = set(chunks_tokens[i][:CHUNK_OVERLAP])
+        pre_ov = set(chunks[i-1][-CHUNK_OVERLAP:])
+
+        if (len(ov.intersection(pre_ov)) > int(0.5*CHUNK_OVERLAP)):
+            merged_tokens.append(chunks_tokens[i][CHUNK_OVERLAP+1:])
+        else:
+            merged_tokens.append(chunks_tokens[i])
+    
+    merged_chunks = " ".join([encoder.decode(t) for t in merged_tokens])
+    return merged_chunks
+# --------------------------------------------------------------------- #
 
 def merge_chunks(chunks: list[str]) -> str:
     if not chunks:
@@ -72,6 +89,7 @@ def find_overlap(text1: str, text2: str) -> int:
         if j == m:
             return m
     return j
+# --------------------------------------------------------------------- #
 
 def calculate_imagebox_percentage(doc: fitz.Document) -> float:
     total_imagebox_area = 0
@@ -85,3 +103,4 @@ def calculate_imagebox_percentage(doc: fitz.Document) -> float:
             imagebox_area += (imagebox[2] - imagebox[0]) * (imagebox[3] - imagebox[1])
             total_imagebox_area += imagebox_area
     return (total_imagebox_area / total_page_area)
+# --------------------------------------------------------------------- #
