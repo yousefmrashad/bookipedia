@@ -6,6 +6,7 @@ from utils.db_config import DB
 from preprocessing.document import Document
 from preprocessing.embedding import HFEmbedding
 from rag.rag_pipeline import RAGPipeline
+from piper import PiperVoice
 # ===================================================================== #
 
 # Schemas
@@ -20,9 +21,9 @@ class TTSText(BaseModel):
 # --------------------------------------------------------------------- #
 
 # #Initializations
-# voice = PiperVoice.load(PIPER_MODEL_PATH,
-#                         PIPER_CONFIG_PATH,
-#                         use_cuda=False)
+voice = PiperVoice.load(PIPER_MODEL_PATH,
+                        PIPER_CONFIG_PATH,
+                        use_cuda=False)
 
 app = FastAPI(
     title="Bookipedia AI Server",
@@ -150,30 +151,30 @@ async def summarize_pages(doc_id: str, pages: Annotated[list[int], Query()]):
     return StreamingResponse(stream_generator(), media_type="text/plain")
 # --------------------------------------------------------------------- #
 
-# @app.get("/tts/")
-# async def text_to_speech(tts_text: TTSText, speed: float = 1):
-#     text = tts_text.text
-#     def synthesize_audio():
-#         # Split the text into lines and synthesize each line
-#         lines = text.split('\n')
-#         for line in lines:
-#             audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
-#             for audio_bytes in audio_stream:
-#                 yield audio_bytes
-#     return StreamingResponse(synthesize_audio(), media_type="audio/raw")
+@app.get("/tts/")
+async def text_to_speech(tts_text: TTSText, speed: float = 1):
+    text = tts_text.text
+    def synthesize_audio():
+        # Split the text into lines and synthesize each line
+        lines = text.split('\n')
+        for line in lines:
+            audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
+            for audio_bytes in audio_stream:
+                yield audio_bytes
+    return StreamingResponse(synthesize_audio(), media_type="audio/raw")
 
-# @app.get("/tts_pages/{doc_id}")
-# async def pages_to_speech(doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1):
-#     def synthesize_audio():
-#         # Split the text into lines and synthesize each line
-#         for page in pages:
-#             text = rag_pipeline.get_page_text(doc_id, page)
-#             lines = text.split('\n')
-#             for line in lines:
-#                 audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
-#                 for audio_bytes in audio_stream:
-#                     yield audio_bytes
-#     return StreamingResponse(synthesize_audio(), media_type="audio/raw")
+@app.get("/tts_pages/{doc_id}")
+async def pages_to_speech(doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1):
+    def synthesize_audio():
+        # Split the text into lines and synthesize each line
+        for page in pages:
+            text = rag_pipeline.get_page_text(doc_id, page)
+            lines = text.split('\n')
+            for line in lines:
+                audio_stream = voice.synthesize_stream_raw(line, length_scale= 1/speed)
+                for audio_bytes in audio_stream:
+                    yield audio_bytes
+    return StreamingResponse(synthesize_audio(), media_type="audio/raw")
 # --------------------------------------------------------------------- #
 
 if (__name__ == "__main__"):

@@ -13,9 +13,9 @@ class RAGPipeline:
         self.embedding_model = embedding_model
         self.client = client
         self.db = Weaviate(self.client, self.embedding_model)
-        # self.web_db = WebWeaviate(self.client, embedder=self.embedding_model)
-        # self.search =  DuckDuckGoSearchAPIWrapper(backend="html")
-        # self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db , llm=self.llm,  search=self.search)
+        self.web_db = WebWeaviate(self.client, embedder=self.embedding_model)
+        self.search =  DuckDuckGoSearchAPIWrapper(backend="html")
+        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db , llm=self.llm,  search=self.search)
     # --------------------------------------------------------------------- #
 
     def get_page_text(self, doc_id: str, page_no: int) -> str:
@@ -23,7 +23,7 @@ class RAGPipeline:
         filters = id_filter(doc_id) & page_filter(page_no)
         res = col.query.fetch_objects(filters=filters, limit=FETCHING_LIMIT, sort=SORT)
         texts = [o.properties["text"] for o in res.objects]
-        text = merge_chunks_v2(texts)
+        text = merge_chunks(texts)
         
         return text
     # --------------------------------------------------------------------- #
@@ -150,8 +150,7 @@ class RAGPipeline:
         response_dict = output_parser.parse(response.content)
 
         # Return the content of the retrieval query
-        # return response_dict["retrieval_method"], response_dict["retrieval_query"]
-        return "Vectorstore", response_dict["retrieval_query"]
+        return response_dict["retrieval_method"], response_dict["retrieval_query"]
     # --------------------------------------------------------------------- #
 
     # Context generation methods
@@ -163,19 +162,17 @@ class RAGPipeline:
         
         return content, metadata
     
-    def generate_web_context(self, retrieval_query: str, rerank=True) -> tuple[list[str], list[str]]:
-        return [], []
-        
-        # if (rerank):
-        #     docs = self.web_retriever.invoke(retrieval_query, k=3)
-        #     docs = self.db.rerank_docs(retrieval_query, docs, top_k=5)
-        # else:    
-        #     docs = self.web_retriever.invoke(retrieval_query, k=2)
+    def generate_web_context(self, retrieval_query: str, rerank=True) -> tuple[list[str], list[str]]:        
+        if (rerank):
+            docs = self.web_retriever.invoke(retrieval_query, k=3)
+            docs = self.db.rerank_docs(retrieval_query, docs, top_k=5)
+        else:    
+            docs = self.web_retriever.invoke(retrieval_query, k=2)
 
-        # content = [doc.page_content for doc in docs]
-        # metadata = list(set([doc.metadata['source'] for doc in docs]))
+        content = [doc.page_content for doc in docs]
+        metadata = list(set([doc.metadata['source'] for doc in docs]))
 
-        # return content, metadata
+        return content, metadata
     # --------------------------------------------------------------------- #
 
     def generate_context(self, retrieval_method: str, retrieval_query: str,

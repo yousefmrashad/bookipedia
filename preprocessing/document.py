@@ -42,9 +42,6 @@ class Document:
         
         for chunk in self.chunks:
             chunk.metadata["source_id"] = self.doc_id
-            
-        # Filtering chunks
-        self.chunks = [c for c in self.chunks if (re.search(r"[a-zA-Z]", c.page_content))]
     # -------------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):

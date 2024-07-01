@@ -27,25 +27,6 @@ def page_filter(page_no: int):
     return wvc.query.Filter.by_property("page_no").equal(page_no)
 # --------------------------------------------------------------------- #
 
-# Another fucking option to merge chunks
-def merge_chunks_v2(chunks: list[str]) -> str:
-    encoder = tiktoken.get_encoding(encoding_name=ENCODING_NAME)
-    chunks_tokens = [encoder.encode(c) for c in chunks]
-
-    merged_tokens = [chunks_tokens[0]]
-    for i in range(1, len(chunks)):
-        ov = set(chunks_tokens[i][:CHUNK_OVERLAP])
-        pre_ov = set(chunks[i-1][-CHUNK_OVERLAP:])
-
-        if (len(ov.intersection(pre_ov)) > int(0.5*CHUNK_OVERLAP)):
-            merged_tokens.append(chunks_tokens[i][CHUNK_OVERLAP+1:])
-        else:
-            merged_tokens.append(chunks_tokens[i])
-    
-    merged_chunks = " ".join([encoder.decode(t) for t in merged_tokens])
-    return merged_chunks
-# --------------------------------------------------------------------- #
-
 def merge_chunks(chunks: list[str]) -> str:
     if not chunks:
         return ""  # Return empty string if there are no chunks
