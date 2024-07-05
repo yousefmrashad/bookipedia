@@ -110,8 +110,8 @@ FETCHING_LIMIT = 1024
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-# EMBEDDING_MODEL_NAME = "mixedbread-ai/mxbai-embed-large-v1"
-EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
+# EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
+EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-base-en-v1.5"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
