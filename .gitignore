@@ -1,4 +1,4 @@
 __pycache__
-/env
 /test*
 /root_config.py
+.env
