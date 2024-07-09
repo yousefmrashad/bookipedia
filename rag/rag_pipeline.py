@@ -43,7 +43,7 @@ class RAGPipeline:
         return chunks
     # --------------------------------------------------------------------- #
     
-    async def summarize_text(self, text: str) -> str:
+    async def summarize_text(self, text: str) -> AsyncIterator[str]:
         SUMMARY_PROMPT = ChatPromptTemplate.from_template("""
             You are an assistant tasked with summarizing the provided text.
             Your goal is to create a concise summary that captures the essence of the original content,
@@ -55,7 +55,13 @@ class RAGPipeline:
         
         chunks = self.summary_splitter(text)
         chunks_summaries = await asyncio.gather(*(self.summary_chain.ainvoke({"text": t}) for t in chunks))
-        summary = '\n\n'.join(chunks_summaries)
+        joined_summary = '\n\n'.join(chunks_summaries)
+        
+        # Recur if combined sub-summary size still exceeds limit
+        if(count_tokens(joined_summary) > SUMMARY_TOKEN_LIMIT):
+            joined_summary = await self.summarize_text(joined_summary)
+        
+        summary = self.summary_chain.astream({"text": joined_summary})
         
         return summary
     # --------------------------------------------------------------------- #
@@ -63,13 +69,7 @@ class RAGPipeline:
     async def summarize_pages(self, doc_id: str, page_nos: list[int]) -> AsyncIterator[str]:
         pages_text = '\n\n'.join([self.get_page_text(doc_id , page_no) for page_no in page_nos])
 
-        summary = await self.summarize_text(text=pages_text)
-
-        # Recur if context still exceeds limit
-        if (count_tokens(summary) > SUMMARY_TOKEN_LIMIT):
-            summary = await self.summarize_text(text=summary)
-
-        return self.summary_chain.astream({"text": summary})
+        return await self.summarize_text(text=pages_text)
     # --------------------------------------------------------------------- #
 
     # Chat Summary #
