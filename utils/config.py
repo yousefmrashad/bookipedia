@@ -1,30 +1,16 @@
 # Using PyTorch
 import os
 os.environ["USE_TORCH"] = "1"
-# Root Path
-import sys
-root_path = os.path.dirname(os.path.dirname(__file__))
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # -- Modules -- #
 
 # Basics
 import torch
+import re, json, math, requests, asyncio
 from collections import Counter
 import math
 import logging
-
-# API
-import requests
-import json
-from asyncio import gather
-
-# OCR
-from doctr.models import ocr_predictor
-from doctr.io import DocumentFile, Document
-
-# TTS
-from piper import PiperVoice
 
 # Image Preprocessing
 import numpy as np
@@ -33,17 +19,15 @@ import cv2 as cv
 # HOCR
 import PIL.Image
 from pikepdf import Pdf
-import re
 
 # Document Loading
 import fitz
 import tiktoken
 from pdf4llm import to_markdown
-from langchain.document_loaders.pdf import PyPDFLoader 
+from langchain_community.document_loaders.pdf import PyPDFLoader 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
-from angle_emb import AnglE, Prompts
 from sentence_transformers import SentenceTransformer
 
 # Weaviate Class
@@ -51,26 +35,38 @@ import weaviate
 import weaviate.classes as wvc
 from weaviate.collections.classes.grpc import Sort
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
-from langchain.vectorstores.utils import maximal_marginal_relevance
+from langchain_community.vectorstores.utils import maximal_marginal_relevance
 from sentence_transformers import CrossEncoder
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
+from langchain.output_parsers import ResponseSchema
+from langchain.output_parsers import StructuredOutputParser
 
 # LLM
+from langchain_google_genai import GoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 # Type Hinting
-from typing import Annotated
+from typing import Annotated, AsyncIterator
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from weaviate import WeaviateClient
 from weaviate.collections.classes.internal import QueryReturn, Object, ReturnProperties
-# -------------------------------------------------- #
+
+# Secret Keys
+from dotenv import load_dotenv
+load_dotenv()
+# --------------------------------------------------------------------- #
 
 # -- Constants -- #
+ROOT = os.path.dirname(os.path.dirname(__file__))
 
-OPEN_AI_KEY = "[OpenAI API Key]"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
+# LLM_MODEL_NAME = "gpt-3.5-turbo-0125"
+LLM_MODEL_NAME = "models/gemini-1.5-pro"
+
 
 # OCR
 DETECTION_MODEL = "db_mobilenet_v3_large"
@@ -100,17 +96,16 @@ MD_SEPARATORS = [
                 "",
             ]
 SEPARATORS = [r"(?<=\w{2}\.\s)", "\n"]
+ENCODING_NAME = "cl100k_base"
 
 # Auto Merging
 L1 = 4
 L2 = 16
-FETCHING_LIMIT = 1024
 
 # Retrieving Filters
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-# EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
 EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-base-en-v1.5"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
@@ -122,7 +117,7 @@ RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 DB_NAME = "bookipedia"
 
 # TTS Model Paths
-PIPER_MODEL_PATH = os.path.join(root_path, "models/[model_name.onnx]")
+PIPER_MODEL_PATH = os.path.join(ROOT, "models/[model_name.onnx]")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
@@ -131,4 +126,8 @@ BACKEND_URL = "[URL to Backend API]"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"
 ACKNOWLEDGE_URL = BACKEND_URL + "ai-applied/"
-# -------------------------------------------------- #
+
+# RAG
+SUMMARY_TOKEN_LIMIT = 8064
+FETCHING_LIMIT = 1024
+# --------------------------------------------------------------------- #

@@ -3,15 +3,17 @@ from root_config import *
 from utils.init import *
 
 from utils.hocr import HocrTransform
-# ================================================== #
+# ===================================================================== #
 
 # OCR
 class OCR:
     def __init__(self, doc_path: str, scale=5):
         self.doc_path = doc_path
         self.scale = scale
+
+        from doctr.io import DocumentFile
         self.docs = DocumentFile.from_pdf(doc_path, scale=scale)
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     @staticmethod
     def filter_image(img: np.ndarray, kernel_size=55, white_point=120, black_point=70) -> np.ndarray:
@@ -50,7 +52,7 @@ class OCR:
         rgb_image = np.stack([sharpened] * 3, axis=-1)
 
         return rgb_image
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     @staticmethod
     def correct_skew(img: np.ndarray) -> np.ndarray:
@@ -77,17 +79,17 @@ class OCR:
         corrected_image = cv.warpAffine(img, rotation_matrix, (cols, rows), flags=cv.INTER_LINEAR)
 
         return corrected_image
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     # OCR
     def ocr(self) -> Document:
+        from doctr.models import ocr_predictor
         model = ocr_predictor(det_arch=DETECTION_MODEL, reco_arch=RECOGNITION_MODEL,
                               assume_straight_pages=True, pretrained=True,
                               export_as_straight_boxes=True).cuda()
         
-        result = model.forward(self.docs)
-        self.result: Document = result
-    # -------------------------------------------------- #
+        self.result = model.forward(self.docs)
+    # ---------------------------------------------- #
 
     # HOCR
     def hocr(self):
@@ -108,13 +110,13 @@ class OCR:
             
             # Append the PDF pages to the output document
             self.pdf_output.pages.extend(pdf.pages)
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     # Save the output PDF with HOCR format
     def save_hocr_doc(self) -> None:
         # hocr_doc_path = self.doc_path.replace(".pdf", "_hocr.pdf")
         self.pdf_output.save(self.doc_path)
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     # OCR Pipeline
     def apply_ocr(self, deskew=False, filter=False) -> None:
@@ -126,4 +128,4 @@ class OCR:
         self.ocr()
         self.hocr()
         self.save_hocr_doc()
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #

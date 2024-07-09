@@ -1,10 +1,10 @@
 # Utils
 from root_config import *
 from utils.init import *
-# ================================================== #
+# ===================================================================== #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: str, lib_doc: bool = False):
+    def __init__(self, doc_path: str, doc_id: str, lib_doc:bool = False):
         self.doc_path = doc_path
         self.doc_id = doc_id
         self.doc = fitz.open(doc_path)
@@ -12,12 +12,12 @@ class Document:
             self.text_based = True
         else:
             self.text_based = calculate_imagebox_percentage(self.doc) < 0.5
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
     
     def get_text_based_document(self):
         from preprocessing.ocr import OCR
         OCR(self.doc_path).apply_ocr()
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
     
     def load_and_split(self):
         if(self.text_based):
@@ -41,11 +41,11 @@ class Document:
         
         for chunk in self.chunks:
             chunk.metadata["source_id"] = self.doc_id
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
 
     def generate_embeddings(self, embedder: Embeddings):
         self.embeddings = embedder.embed_documents([chunk.page_content for chunk in self.chunks])
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
     
     def store_in_db(self, client: WeaviateClient):        
         collection = client.collections.get(DB_NAME)
@@ -73,10 +73,10 @@ class Document:
                 objs.append(obj)
 
             collection.data.insert_many(objs)
-    # -------------------------------------------------- #
+    # ---------------------------------------------- #
     
     def process_document(self, embedder: Embeddings, client: WeaviateClient):       
         self.load_and_split()
         self.generate_embeddings(embedder)
         self.store_in_db(client)
-    # -------------------------------------------------- #
+# --------------------------------------------------------------------- #

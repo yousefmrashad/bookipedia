@@ -1,21 +1,20 @@
 # Config
 from root_config import *
 from utils.config import *
-
-# ================================================== #
+# ===================================================================== #
 
 # -- Helpers -- #
 
 # OCR
 def map_values(img, in_min, in_max, out_min, out_max):
     return (img - in_min) * ((out_max - out_min) / (in_max - in_min)) + out_min
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Document Loader
 def count_tokens(text: str) -> int:
-    encoding = tiktoken.get_encoding("cl100k_base")
+    encoding = tiktoken.get_encoding(encoding_name=ENCODING_NAME)
     return len(encoding.encode(text))
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Retrieving Filters
 def id_filter(source_id: str):
@@ -26,8 +25,7 @@ def ids_filter(source_ids: list[str]):
 
 def page_filter(page_no: int):
     return wvc.query.Filter.by_property("page_no").equal(page_no)
-
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 def merge_chunks(chunks: list[str]) -> str:
     if not chunks:
@@ -45,7 +43,7 @@ def merge_chunks(chunks: list[str]) -> str:
             merged_text += " " + chunk  # If no overlap, append the entire chunk
     
     return merged_text
-
+# --------------------------------------------------------------------- #
 
 def find_overlap(text1: str, text2: str) -> int:
     if not text1 or not text2:
@@ -72,6 +70,7 @@ def find_overlap(text1: str, text2: str) -> int:
         if j == m:
             return m
     return j
+# --------------------------------------------------------------------- #
 
 def calculate_imagebox_percentage(doc: fitz.Document) -> float:
     total_imagebox_area = 0
@@ -85,3 +84,4 @@ def calculate_imagebox_percentage(doc: fitz.Document) -> float:
             imagebox_area += (imagebox[2] - imagebox[0]) * (imagebox[3] - imagebox[1])
             total_imagebox_area += imagebox_area
     return (total_imagebox_area / total_page_area)
+# --------------------------------------------------------------------- #

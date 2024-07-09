@@ -1,12 +1,8 @@
-# Utils
-from root_config import *
-from utils.init import *
-# ================================================== #
-
 import logging
 import re
 from typing import List, Optional
 
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain_community.document_loaders.async_html import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
 from langchain_community.llms.llamacpp import LlamaCpp
@@ -89,7 +85,7 @@ class WebResearchRetriever(BaseRetriever):
         prompt: Optional[BasePromptTemplate] = None,
         num_search_results: int = 1,
         text_splitter: RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter(
-            chunk_size=1024, chunk_overlap=64
+            chunk_size=512, chunk_overlap=64
         ),
     ) -> "WebResearchRetriever":
         """Initialize from llm using default template.
