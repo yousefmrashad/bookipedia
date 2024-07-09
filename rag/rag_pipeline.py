@@ -172,7 +172,7 @@ class RAGPipeline:
         
         # Generate vectorestore context
         vecdb_context, vecdb_metadata = [], []
-        if (retrieval_method in ("Retrieval", "retrieval", "Hybrid", "hybrid") and doc_ids):
+        if (retrieval_method in ("Retrieval", "retrieval", "Hybrid", "hybrid")) and (doc_ids):
             vecdb_context, vecdb_metadata = self.generate_vecdb_context(retrieval_query, doc_ids)
         
         # Generate web context

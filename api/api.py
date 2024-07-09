@@ -40,7 +40,7 @@ voice = PiperVoice.load(PIPER_MODEL_PATH,
 app = FastAPI(
     title="Bookipedia AI Server",
     description="Bookipedia AI Server is an AI inference server for the Bookipedia application, which serves as an online library with an AI-powered reading assistant. The server utilizes state-of-the-art language models (LLMs), optical character recognition (OCR), and text-to-speech (TTS) features.",
-    version="0.0.4"
+    version="1.0.0"
 )
 embedding_model = HFEmbedding()
 client = DB().connect()
@@ -174,8 +174,9 @@ async def chat_response(background_tasks: BackgroundTasks,
 # -------------------------------------------------- #
 
 @app.get("/summarize_pages/{doc_id}")
-async def summarize_pages(doc_id: str, pages: Annotated[list[int], Query()]):
-    logger.info(f"Summarize pages endpoint called with doc_id: {doc_id}, pages: {pages}")
+async def summarize_pages(doc_id: str, start_page: int, end_page: int):
+    logger.info(f"Summarize pages endpoint called with doc_id: {doc_id}, pages: {start_page} to {end_page}")
+    pages = list(range(start_page, end_page + 1))
     try:
         async def stream_generator():
             summary = await rag_pipeline.summarize_pages(doc_id, pages)
