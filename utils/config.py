@@ -24,7 +24,7 @@ from pikepdf import Pdf
 import fitz
 import tiktoken
 from pdf4llm import to_markdown
-from langchain.document_loaders.pdf import PyPDFLoader 
+from langchain_community.document_loaders.pdf import PyPDFLoader 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Embeddings
@@ -35,13 +35,14 @@ import weaviate
 import weaviate.classes as wvc
 from weaviate.collections.classes.grpc import Sort
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
-from langchain.vectorstores.utils import maximal_marginal_relevance
+from langchain_community.vectorstores.utils import maximal_marginal_relevance
 from sentence_transformers import CrossEncoder
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain.output_parsers import ResponseSchema
 from langchain.output_parsers import StructuredOutputParser
 
 # LLM
+from langchain_google_genai import GoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -61,8 +62,11 @@ load_dotenv()
 # -- Constants -- #
 ROOT = os.path.dirname(os.path.dirname(__file__))
 
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
-LLM_MODEL_NAME = "gpt-3.5-turbo-0125"
+# LLM_MODEL_NAME = "gpt-3.5-turbo-0125"
+LLM_MODEL_NAME = "models/gemini-1.5-pro"
+
 
 # OCR
 DETECTION_MODEL = "db_mobilenet_v3_large"
@@ -124,6 +128,6 @@ POST_HOCR_URL = BACKEND_URL + "ocr-file/"
 ACKNOWLEDGE_URL = BACKEND_URL + "ai-applied/"
 
 # RAG
-SUMMARY_TOKEN_LIMIT = 15872
+SUMMARY_TOKEN_LIMIT = 8064
 FETCHING_LIMIT = 1024
 # --------------------------------------------------------------------- #

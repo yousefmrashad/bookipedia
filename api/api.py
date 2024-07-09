@@ -92,7 +92,7 @@ async def root():
 # -------------------------------------------------- #
 
 @app.post("/add_document/{doc_id}")
-async def add_document(background_tasks: BackgroundTasks, doc_id: str, url: str, lib_doc=False):
+async def add_document(background_tasks: BackgroundTasks, doc_id: str, url: str, lib_doc: bool = False):
     logger.info(f"Add document endpoint called with doc_id: {doc_id}, url: {url}, lib_doc: {lib_doc}")
     try:
         response = requests.get(url, stream=True)
@@ -134,7 +134,7 @@ async def delete_document(doc_id: str):
 async def chat_response(background_tasks: BackgroundTasks,
                         chat_id: str,
                         chat_params: ChatParams,
-                        enable_web_retrieval=False):
+                        enable_web_retrieval: bool = False):
     logger.info(f"Chat response endpoint called with chat_id: {chat_id}, enable_web_retrieval: {enable_web_retrieval}")
     try:
         # Extract parameters

@@ -4,7 +4,7 @@ from utils.init import *
 # ===================================================================== #
 
 class Document:
-    def __init__(self, doc_path: str, doc_id: str, lib_doc=False):
+    def __init__(self, doc_path: str, doc_id: str, lib_doc:bool = False):
         self.doc_path = doc_path
         self.doc_id = doc_id
         self.doc = fitz.open(doc_path)

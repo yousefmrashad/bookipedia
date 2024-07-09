@@ -9,13 +9,14 @@ from rag.weaviate_retriever import Weaviate
 
 class RAGPipeline:
     def __init__(self, embedding_model: Embeddings, client: WeaviateClient) -> None:
-        self.llm = ChatOpenAI(model_name=LLM_MODEL_NAME, temperature=0, streaming=True, openai_api_key=OPEN_AI_KEY)
+        # self.llm = ChatOpenAI(model_name=LLM_MODEL_NAME, temperature=0, streaming=True, openai_api_key=OPEN_AI_KEY)
+        self.llm = GoogleGenerativeAI(model=LLM_MODEL_NAME, google_api_key= GOOGLE_API_KEY, temperature= 0)
         self.embedding_model = embedding_model
         self.client = client
         self.db = Weaviate(self.client, self.embedding_model)
         self.web_db = WebWeaviate(self.client, embedder=self.embedding_model)
-        self.search =  DuckDuckGoSearchAPIWrapper(backend="html")
-        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db , llm=self.llm,  search=self.search)
+        self.search = DuckDuckGoSearchAPIWrapper(backend="html")
+        self.web_retriever = WebResearchRetriever.from_llm(vectorstore=self.web_db, llm=self.llm, search=self.search)
     # --------------------------------------------------------------------- #
 
     def get_page_text(self, doc_id: str, page_no: int) -> str:
@@ -64,9 +65,9 @@ class RAGPipeline:
 
         summary = await self.summarize_text(text=pages_text)
 
-        # Re-summerize the summary if it's too fucking long [idk if that's right]
+        # Recur if context still exceeds limit
         if (count_tokens(summary) > SUMMARY_TOKEN_LIMIT):
-            summary = self.summarize_text(text=summary)
+            summary = await self.summarize_text(text=summary)
 
         return self.summary_chain.astream({"text": summary})
     # --------------------------------------------------------------------- #
@@ -96,7 +97,7 @@ class RAGPipeline:
         chat_summary = chat_summary_chain.invoke(llm_input)
 
         # Return the content of the chat summary
-        return chat_summary.content
+        return chat_summary
     # --------------------------------------------------------------------- #
 
     # -- Retrieval Methods -- #
@@ -112,26 +113,16 @@ class RAGPipeline:
 
         # Define the retrieval query template
         RETRIEVAL_QUERY_PROMPT = ChatPromptTemplate.from_template(
-            """You are an intelligent assistant responsible for determining the appropriate method to retrieve information
-            based on a given user prompt and a chat summary.
+            """You are an intelligent assistant responsible for determining the appropriate method to retrieve information based on a given user prompt and a chat summary.
             Here are the steps to follow:
-
             (1) Extract the Retrieval Method:
-            Analyze the user prompt only to decide if there is any specific request about how to retrieve information.
-            
-            Choose from the following methods:
+            Analyze the user prompt and chat summary to determine if information retrieval is needed.
 
-            Vectorstore: Use this method if the user didn't point to any retrieving method in the prompt
-            or if the information is likely in the document that the user is currently reading.
-
-            Web: Use this method if the information is likely to be found on the internet
-            or requires the latest, up-to-date information.
-
-            Hybrid: Use this method if the information could benefit from both local dataset retrieval
-            and the latest information from the internet, ensuring comprehensive coverage.
-
-            None: Use this method if the user is asking about something mentioned in the chat history
-            or if the information is unlikely to be found in the document.
+            Choose from the following methods (case sensitive):
+            - Retrieval: The user query is not covered by the chat history and could use information from external sources (the query is about a specific topic or the user is asking about an excerpt from an external source), or the user explicitly mentions "this document/book/article" or something similar.
+            - Web: The user explicitly asks for sources from the web.
+            - Hybrid: The requirements for retrieval are achieved, AND the user explicitly asks for web sources.
+            - None: The user query is already covered by the chat history, and doesn't need further information from external sources, or is a general request.
 
             (2) Generate the Retrieval Query: Formulate a precise and effective retrieval query based on the user's prompt and the chat summary.
 
@@ -147,7 +138,7 @@ class RAGPipeline:
 
         # Invoke the retrieval query chain with the user prompt and chat summary
         response = retrieval_query_chain.invoke({"user_prompt": user_prompt, "chat_summary": chat_summary, "format_instructions": format_instructions})
-        response_dict = output_parser.parse(response.content)
+        response_dict = output_parser.parse(response)
 
         # Return the content of the retrieval query
         return response_dict["retrieval_method"], response_dict["retrieval_query"]
@@ -172,7 +163,7 @@ class RAGPipeline:
         content = [doc.page_content for doc in docs]
         metadata = list(set([doc.metadata['source'] for doc in docs]))
 
-        return content, metadata
+        return content, set(metadata)
     # --------------------------------------------------------------------- #
 
     def generate_context(self, retrieval_method: str, retrieval_query: str,
@@ -181,12 +172,12 @@ class RAGPipeline:
         
         # Generate vectorestore context
         vecdb_context, vecdb_metadata = [], []
-        if (retrieval_method in ("Vectorstore", "Hybrid")):
+        if (retrieval_method in ("Retrieval", "retrieval", "Hybrid", "hybrid") and doc_ids):
             vecdb_context, vecdb_metadata = self.generate_vecdb_context(retrieval_query, doc_ids)
         
         # Generate web context
         web_context , web_metadata = [], []
-        if (retrieval_method in ("Web", "Hybrid")) or (enable_web_retrieval):
+        if (retrieval_method in ("Web", "web", "Hybrid", "hybrid")) or (enable_web_retrieval):
             web_context, web_metadata = self.generate_web_context(retrieval_query)
 
         # Combine the contexts

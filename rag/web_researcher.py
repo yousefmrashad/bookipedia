@@ -85,7 +85,7 @@ class WebResearchRetriever(BaseRetriever):
         prompt: Optional[BasePromptTemplate] = None,
         num_search_results: int = 1,
         text_splitter: RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter(
-            chunk_size=1024, chunk_overlap=64
+            chunk_size=512, chunk_overlap=64
         ),
     ) -> "WebResearchRetriever":
         """Initialize from llm using default template.
