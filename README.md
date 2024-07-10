@@ -30,7 +30,7 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 
 - **Retrieval-Augmented Generation (RAG)**
   - Utilization of advanced RAG techniques to achieve high groundedness, and context and answer relevance.
-  - Utilization of GPT-3.5 for generating insights, and accurate and reliable answers.
+  - Utilization of GPT and Gemini LLMs for generating insights, and accurate and reliable answers.
   - Capable of retrieving information both from the book content and through web research.
 
 ### Functional Features
@@ -103,7 +103,7 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 **System Requirements:**
 
 * **Operating System**: Only 64-bit Linux systems are currently supported.
-* **Python**: `version 3.10.x`
+* **Python**: `version 3.10.x` (It is recommended to create a clean environment for the server)
 * **CUDA**: A functioning CUDA and cuDNN environment with a minimum CUDA version of `11.x`.
 
 ###  Installation

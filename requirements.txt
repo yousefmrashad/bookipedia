@@ -6,10 +6,11 @@ fake_useragent==1.5.1
 fastapi==0.110.3
 html2text==2024.2.26
 langchain==0.2.7
-langchain-community==0.2.5
-langchain_core==0.1.49
-langchain_openai==0.1.5
-langchain_text_splitters==0.0.1
+langchain-community==0.0.28
+langchain-core==0.2.12
+langchain-google-genai==1.0.7
+langchain-openai==0.1.6
+langchain-text-splitters==0.2.2
 numpy==1.26.4
 openai==1.13.3
 opencv_python==4.9.0.80
@@ -26,6 +27,6 @@ sentence_transformers==2.7.0
 tiktoken==0.6.0
 torch==2.2.2
 torchvision==0.17.2
-tqdm>=4.66.3
+tqdm==4.66.3
 uvicorn==0.29.0
 weaviate_client==4.5.1
