@@ -163,7 +163,7 @@ class RAGPipeline:
         content = [doc.page_content for doc in docs]
         metadata = list(set([doc.metadata['source'] for doc in docs]))
 
-        return content, set(metadata)
+        return content, metadata
     # --------------------------------------------------------------------- #
 
     def generate_context(self, retrieval_method: str, retrieval_query: str,

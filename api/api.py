@@ -159,8 +159,8 @@ async def chat_response(background_tasks: BackgroundTasks,
                 response += chunk
                 yield chunk.encode("utf-8")
 
-            yield b'\n\n{[sources]\n\n"sources": '
-            yield json.dumps(metadata).encode("utf-8") + b"}"
+            yield b'\n\n[sources]\n\n{"sources": '
+            yield json.dumps(metadata).encode("utf-8") + b'}'
             
             # Add chat summary to background tasks
             background_tasks.add_task(summarize_chat, chat_id, response, user_prompt, chat_summary)
