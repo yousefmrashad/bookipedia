@@ -118,11 +118,11 @@ class RAGPipeline:
             (1) Extract the Retrieval Method:
             Analyze the user prompt and chat summary to determine if information retrieval is needed.
 
-            Choose from the following methods (case sensitive):
-            - Retrieval: The user query is not covered by the chat history and could use information from external sources (the query is about a specific topic or the user is asking about an excerpt from an external source), or the user explicitly mentions "this document/book/article" or something similar.
+            Choose from the following methods:
+            - Retrieval: The user query is not covered by the chat history and could use information from external sources (i.e. the query is very specific) OR the user provides an excerpt, OR the user explicitly mentions "this document/book/article" or something similar.
             - Web: The user explicitly asks for sources from the web.
-            - Hybrid: The requirements for retrieval are achieved, AND the user explicitly asks for web sources.
-            - None: The user query is already covered by the chat history, and doesn't need further information from external sources, or is a general request.
+            - Hybrid: The requirements for "Retrieval" are met, AND the user explicitly asks for web sources.
+            - None: The user query is already covered by the chat history, and doesn't need further information from external sources, OR is a general request.
 
             (2) Generate the Retrieval Query: Formulate a precise and effective retrieval query based on the user's prompt and the chat summary.
 

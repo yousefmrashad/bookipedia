@@ -145,7 +145,7 @@ async def chat_response(background_tasks: BackgroundTasks,
 
         # Generate retrieval method & retrieval query
         retrieval_method, retrieval_query = rag_pipeline.generate_retrieval_query(user_prompt, chat_summary)
-
+        
         # Generate context
         context, metadata = rag_pipeline.generate_context(retrieval_method, retrieval_query, doc_ids, enable_web_retrieval)
 

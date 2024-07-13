@@ -3,7 +3,8 @@ import requests
 url = "http://localhost:8000/summarize_pages/1"
 
 params = {
-    "pages":[2,3]
+    "start_page":34,
+    "end_page":36
 }
 
 # Print response content
