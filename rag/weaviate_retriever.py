@@ -121,7 +121,7 @@ class Weaviate(VectorStore):
         if (l1_chunks_keys):
             l1_filters = wvc.query.Filter.by_property("l1").contains_any(l1_chunks_keys) & source_id_filter
             l1_chunks = self.collection.query.fetch_objects(filters=l1_filters, limit=FETCHING_LIMIT, sort=SORT).objects
-            l1_chunks = self.merge_chunks(l1_chunks, l="l1")
+            l1_chunks = self.merge_chunks(l1_chunks, level="l1")
         else:
             l1_chunks = []
 
@@ -129,7 +129,7 @@ class Weaviate(VectorStore):
         if (l2_chunks_keys):
             l2_filters = wvc.query.Filter.by_property("l2").contains_any(l2_chunks_keys) & source_id_filter
             l2_chunks = self.collection.query.fetch_objects(filters=l2_filters, limit=FETCHING_LIMIT, sort=SORT).objects
-            l2_chunks = self.merge_chunks(l2_chunks, l="l2")
+            l2_chunks = self.merge_chunks(l2_chunks, level="l2")
         else:
             l2_chunks = []
 

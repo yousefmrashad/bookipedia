@@ -4,8 +4,8 @@ duckduckgo_search==6.1.0
 fake_useragent==1.5.1
 fastapi==0.110.3
 html2text==2024.2.26
-langchain==0.2.7
-langchain-community==0.0.28
+langchain==0.3.13
+langchain-community>=0.2.9
 langchain-core==0.2.12
 langchain-google-genai==1.0.7
 langchain-openai==0.1.6
