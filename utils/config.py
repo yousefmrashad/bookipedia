@@ -56,7 +56,8 @@ from weaviate.collections.classes.internal import QueryReturn, Object, ReturnPro
 
 # Secret Keys
 from dotenv import load_dotenv
-load_dotenv()
+if not os.getenv("GOOGLE_API_KEY") and not os.getenv("OPEN_AI_KEY"):
+    load_dotenv() 
 # --------------------------------------------------------------------- #
 
 # -- Constants -- #
@@ -64,8 +65,8 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
-# LLM_MODEL_NAME = "gpt-3.5-turbo-0125"
-LLM_MODEL_NAME = "models/gemini-1.5-pro"
+# LLM_MODEL_NAME = "gpt-4.1"
+LLM_MODEL_NAME = "models/gemini-2.0-flash"
 
 
 # OCR
@@ -106,22 +107,22 @@ L2 = 16
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-base-en-v1.5"
+EMBEDDING_MODEL_NAME = "jinaai/jina-embeddings-v3"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: " 
 
 # Re-ranker Model
 # RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
-RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
+RERANKER_MODEL_NAME = "jinaai/jina-reranker-v2-base-multilingual"
 
 # Database Name
 DB_NAME = "bookipedia"
 
 # TTS Model Paths
-PIPER_MODEL_PATH = os.path.join(ROOT, "models/[model_name.onnx]")
+PIPER_MODEL_PATH = os.path.join(ROOT, "models/en_US-amy-medium.onnx")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
-BACKEND_URL = "[URL to Backend API]"
+BACKEND_URL = "https://bookipedia-backend.onrender.com/ai-api/"
 # FILE_URL = BACKEND_URL + "file/"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"
