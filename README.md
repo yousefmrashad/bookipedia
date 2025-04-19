@@ -1,6 +1,6 @@
 <div align = "center">
-
-<h1>BOOKIPEDIA-AI</h1>
+<img src="https://i.imgur.com/WohhUEf.png" alt="Logo" width="147.24" height="160">
+<h1>Bookipedia-AI</h1>
 <h3>RAG, OCR, TTS and More</h3>
 
 <em>Part of the (Bookipedia App) a graduation project at CSED MU.</em>
