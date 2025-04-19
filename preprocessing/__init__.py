@@ -1,1 +1,1 @@
-__all__ = ['document_class', 'embeddings_class', 'ocr']
+__all__ = ['document', 'embedding', 'ocr']
