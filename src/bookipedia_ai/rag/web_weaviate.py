@@ -1,57 +1,75 @@
-# Utils
-from root_config import *
-from utils.init import *
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.vectorstores import VectorStore
+from weaviate.client import WeaviateClient
+from weaviate.collections.classes.internal import Object
+
+from ..utils.config import FETCHING_LIMIT
+from ..utils.functions import ids_filter
+
 # ===================================================================== #
+
 
 class WebWeaviate(VectorStore):
     def __init__(self, client: WeaviateClient, embedder: Embeddings) -> None:
         self.client = client
         self.embedder = embedder
         self.collection = self.client.collections.get("web_research")
+
     # ---------------------------------------------- #
-        
+
     # -- Main Methods -- #
-        
+
     def add_texts(self, texts: list[str], metadatas: list[dict] = None) -> list[str]:
         embeddings = self.embedder.embed_documents(texts)
 
         ids = []
         with self.collection.batch.dynamic() as batch:
             for i, metadatas in enumerate(metadatas):
-                metadatas['text'] = texts[i]
+                metadatas["text"] = texts[i]
                 id = batch.add_object(properties=metadatas, vector=embeddings[i])
                 ids.append(id)
         return ids
+
     # ---------------------------------------------- #
 
     def similarity_search(self, query: str, k=5, alpha=0.9) -> list[Document]:
         query_emb = self.embedder.embed_query(query)
 
-        objects = self.collection.query.hybrid(query=query, vector=query_emb,
-                                                limit=k, alpha=alpha).objects
+        objects = self.collection.query.hybrid(
+            query=query, vector=query_emb, limit=k, alpha=alpha
+        ).objects
         docs = self.objects_to_docs(objects)
         return docs
+
     # ---------------------------------------------- #
-    
+
     # -- Utility Methods -- #
 
     # Delete all documents in the collection
     def delete(self):
-        response = self.collection.query.fetch_objects(limit=FETCHING_LIMIT, return_properties=[])
+        response = self.collection.query.fetch_objects(
+            limit=FETCHING_LIMIT, return_properties=[]
+        )
         ids = [o.uuid for o in response.objects]
-        if (ids):
+        if ids:
             self.collection.data.delete_many(where=ids_filter(ids))
+
     # ---------------------------------------------- #
-        
+
     # Response to documents
     def objects_to_docs(self, objects: list[Object]) -> list[Document]:
         docs = []
         for obj in objects:
             text = obj.properties["text"]
-            metadata = {key: value for key, value in obj.properties.items() if key != "text"}
+            metadata = {
+                key: value for key, value in obj.properties.items() if key != "text"
+            }
             docs.append(Document(page_content=text, metadata=metadata))
         return docs
-    
+
     # -- Abstract Methods -- #
-    def from_texts(cls, texts, embedding, metadatas=None, **kwargs): return
+    def from_texts(cls, texts, embedding, metadatas=None, **kwargs):
+        return
+
     # ---------------------------------------------- #

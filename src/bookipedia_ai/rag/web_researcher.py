@@ -2,10 +2,12 @@ import logging
 import re
 from typing import List, Optional
 
-from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
+from langchain_classic.chains.llm import LLMChain
+from langchain_classic.chains.prompt_selector import ConditionalPromptSelector
 from langchain_community.document_loaders.async_html import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
 from langchain_community.llms.llamacpp import LlamaCpp
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain_core.callbacks import (
     AsyncCallbackManagerForRetrieverRun,
     CallbackManagerForRetrieverRun,
@@ -14,13 +16,10 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseLLM
 from langchain_core.output_parsers import BaseOutputParser
 from langchain_core.prompts import BasePromptTemplate, PromptTemplate
-from pydantic import BaseModel, Field
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter, TextSplitter
-
-from langchain.chains.llm import LLMChain
-from langchain.chains.prompt_selector import ConditionalPromptSelector
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +65,12 @@ class WebResearchRetriever(BaseRetriever):
         ..., description="Vector store for storing web pages"
     )
     llm_chain: LLMChain
-    search: DuckDuckGoSearchAPIWrapper = Field(..., description="DuckDuckGo Search API Wrapper")
-    num_search_results: int = Field(1, description="Number of pages per DuckDuckGo search")
+    search: DuckDuckGoSearchAPIWrapper = Field(
+        ..., description="DuckDuckGo Search API Wrapper"
+    )
+    num_search_results: int = Field(
+        1, description="Number of pages per DuckDuckGo search"
+    )
     text_splitter: TextSplitter = Field(
         RecursiveCharacterTextSplitter(chunk_size=480, chunk_overlap=32),
         description="Text splitter for splitting web pages into chunks",

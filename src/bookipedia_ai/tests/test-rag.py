@@ -12,11 +12,9 @@ body = {
     User: Got it. How does the model learn to interpret these positional encodings?
     Assistant: Through training, the model learns to associate positional encoding patterns with token positions. This helps it understand sequential relationships between tokens better.
     """,
-    "doc_ids": ['1'],
+    "doc_ids": ["1"],
 }
-params = {
-    'enable_web_retrieval': False
-}
+params = {"enable_web_retrieval": False}
 body_web = {
     "user_prompt": "what are Tesla's major contributions?",
     "chat_summary": "Nikola Tesla was a Serbian-American inventor, electrical engineer, and futurist. He is known for his contributions.",
@@ -25,10 +23,10 @@ body_web = {
     Answer: Nikola Tesla was a famous inventor.
     User: What is his nationality?
     Answer: He was a Serbian-American.
-    """
-    }
+    """,
+}
 
 # Print response content
-response = requests.get(url, json=body, params = params, stream=True)
+response = requests.get(url, json=body, params=params, stream=True)
 for line in response.iter_lines():
-    print(line.decode('utf-8'))
+    print(line.decode("utf-8"))
