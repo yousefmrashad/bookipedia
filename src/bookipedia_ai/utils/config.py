@@ -72,7 +72,7 @@ PIPER_MODEL_PATH = os.path.join(ROOT, "models/en_US-amy-medium.onnx")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
-BACKEND_URL = "https://bookipedia-backend.onrender.com/ai-api/"
+BACKEND_URL = os.getenv("BACKEND_URL", "https://bookipedia-backend.onrender.com/ai-api/")
 # FILE_URL = BACKEND_URL + "file/"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"

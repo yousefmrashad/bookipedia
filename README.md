@@ -124,6 +124,27 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 > $ uv sync
 > ```
 
+### Configuration
+
+#### Environment Variables
+
+1.  Copy the example environment file:
+    ```console
+    $ cp .env.example .env
+    ```
+2.  Open `.env` and fill in your API keys:
+    *   `GOOGLE_API_KEY`: Required for Google-based services.
+    *   `OPEN_AI_KEY`: Required if using OpenAI models.
+
+#### Models Setup
+
+The Piper TTS model needs to be downloaded manually.
+Please follow the instructions in [models/README.md](models/README.md) to download and place the required model files in the `models/` directory.
+
+#### Advanced Configuration
+
+For deeper customization (e.g., changing model names, chunk sizes, backend URLs), you can modify `src/bookipedia_ai/utils/config.py`.
+
 ###  Usage
 
 <h4>From <code>source</code></h4>

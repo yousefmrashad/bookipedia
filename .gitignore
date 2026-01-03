@@ -2,4 +2,5 @@ __pycache__
 /test*
 /root_config.py
 .env
-/models
+/models/*
+!/models/README.md
