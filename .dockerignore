@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+.env
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Project
+models/
+!models/README.md
