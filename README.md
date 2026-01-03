@@ -106,36 +106,40 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 
 ###  Installation
 
-**From `source`**
+#### From `source`
 
-> 1. Clone the bookipedia repository:
->
-> ```console
-> $ git clone https://github.com/yousefmrashad/bookipedia
-> ```
->
-> 2. Change to the project directory:
-> ```console
-> $ cd bookipedia
-> ```
->
-> 3. Install the dependencies using uv:
-> ```console
-> $ uv sync
-> ```
+> [!IMPORTANT]
+> If you are not using Docker Compose, you must have a local instance of Weaviate running.
+> You can run it using:
+> `docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.30.0`
 
-**From `Docker`**
+1. Clone the bookipedia repository:
+   ```console
+   $ git clone https://github.com/yousefmrashad/bookipedia
+   ```
+2. Change to the project directory:
+   ```console
+   $ cd bookipedia
+   ```
+3. Install the dependencies using uv:
+   ```console
+   $ uv sync
+   ```
 
-> 1. Clone the bookipedia repository:
->
-> ```console
-> $ git clone https://github.com/yousefmrashad/bookipedia
-> ```
->
-> 2. Change to the project directory:
-> ```console
-> $ cd bookipedia
-> ```
+**From Docker**
+
+1. Clone the bookipedia repository:
+   ```console
+   $ git clone https://github.com/yousefmrashad/bookipedia
+   ```
+2. Change to the project directory:
+   ```console
+   $ cd bookipedia
+   ```
+3. Build the services:
+   ```console
+   $ docker-compose build
+   ```
 
 ### Configuration
 
@@ -148,6 +152,9 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 2.  Open `.env` and fill in your API keys:
     *   `GOOGLE_API_KEY`: Required for Google-based services.
     *   `OPEN_AI_KEY`: Required if using OpenAI models.
+    *   `WEAVIATE_HOST`: The host of the Weaviate instance (default: `localhost`).
+    *   `WEAVIATE_PORT`: The port of the Weaviate instance (default: `8080`).
+    *   `WEAVIATE_GRPC_PORT`: The gRPC port of the Weaviate instance (default: `50051`).
 
 #### Models Setup
 
@@ -160,30 +167,29 @@ For deeper customization (e.g., changing model names, chunk sizes, backend URLs)
 
 ###  Usage
 
-**From `source`**
+#### From `source`
 
-> Run the server using the command below:
-> ```console
-> $ uv run bookipedia-ai
-> ```
-> or using the python module:
-> ```console
-> $ uv run python -m bookipedia_ai
-> ```
+Run the server using the command below:
+```console
+$ uv run bookipedia-ai
+```
+or using the python module:
+```console
+$ uv run python -m bookipedia_ai
+```
 
-**From `Docker`**
+**From Docker**
 
 > [!IMPORTANT]
 > Ensure you have configured your [Environment Variables](#environment-variables) and completed the [Models Setup](#models-setup) before running the command below.
 
-> Run the server and the database using docker-compose:
-> ```console
-> $ docker-compose up --build
-> ```
->
-> *Note: You can omit `--build` for subsequent runs if you haven't modified the code or dependencies.*
-> 
----
+Run the server and the database using docker-compose:
+```console
+$ docker-compose up
+```
+
+> [!NOTE]
+> If you modify the source code, run `docker-compose up --build` to apply the changes.
 
 ## Models and Frameworks
 ### AI Models
