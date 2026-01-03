@@ -1,5 +1,5 @@
+ddgs>=9.10.0
 dotenv>=0.9.9
-duckduckgo-search>=8.1.1
 einops>=0.8.1
 fastapi>=0.128.0
 langchain>=1.2.0

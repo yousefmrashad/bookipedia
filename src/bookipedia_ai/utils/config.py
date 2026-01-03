@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from weaviate.collections.classes.grpc import Sort
+
 # --------------------------------------------------------------------- #
 os.environ["USE_TORCH"] = "1"
 if not os.getenv("GOOGLE_API_KEY") and not os.getenv("OPEN_AI_KEY"):
