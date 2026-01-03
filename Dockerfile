@@ -24,13 +24,13 @@ WORKDIR /app
 # Copy dependency definitions
 COPY pyproject.toml uv.lock requirements.txt ./
 
-# Install dependencies
-# Using uv sync to install into the system python environment
-RUN uv sync --frozen
-
 # Copy the rest of the application
 COPY src/ src/
 COPY models/README.md models/README.md
+
+# Install dependencies
+# Using uv sync to install into the system python environment
+RUN uv sync --frozen
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
