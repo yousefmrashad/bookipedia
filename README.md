@@ -106,7 +106,7 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 
 ###  Installation
 
-<h4>From <code>source</code></h4>
+**From `source`**
 
 > 1. Clone the bookipedia repository:
 >
@@ -122,6 +122,19 @@ Bookipedia is an online library with an AI powered reading assistant, revolution
 > 3. Install the dependencies using uv:
 > ```console
 > $ uv sync
+> ```
+
+**From `Docker`**
+
+> 1. Clone the bookipedia repository:
+>
+> ```console
+> $ git clone https://github.com/yousefmrashad/bookipedia
+> ```
+>
+> 2. Change to the project directory:
+> ```console
+> $ cd bookipedia
 > ```
 
 ### Configuration
@@ -147,7 +160,7 @@ For deeper customization (e.g., changing model names, chunk sizes, backend URLs)
 
 ###  Usage
 
-<h4>From <code>source</code></h4>
+**From `source`**
 
 > Run the server using the command below:
 > ```console
@@ -157,6 +170,18 @@ For deeper customization (e.g., changing model names, chunk sizes, backend URLs)
 > ```console
 > $ uv run python -m bookipedia_ai
 > ```
+
+**From `Docker`**
+
+> [!IMPORTANT]
+> Ensure you have configured your [Environment Variables](#environment-variables) and completed the [Models Setup](#models-setup) before running the command below.
+
+> Run the server and the database using docker-compose:
+> ```console
+> $ docker-compose up --build
+> ```
+>
+> *Note: You can omit `--build` for subsequent runs if you haven't modified the code or dependencies.*
 > 
 ---
 

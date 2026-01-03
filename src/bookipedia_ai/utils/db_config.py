@@ -1,3 +1,5 @@
+import os
+
 import weaviate
 import weaviate.classes as wvc
 
@@ -8,7 +10,11 @@ from .config import DB_NAME
 
 class DB:
     def __init__(self):
-        self.client = weaviate.connect_to_local()
+        self.client = weaviate.connect_to_local(
+            host=os.getenv("WEAVIATE_HOST", "localhost"),
+            port=int(os.getenv("WEAVIATE_PORT", 8080)),
+            grpc_port=int(os.getenv("WEAVIATE_GRPC_PORT", 50051)),
+        )
 
     def connect(self):
         if not (self.client.collections.exists(DB_NAME)):
