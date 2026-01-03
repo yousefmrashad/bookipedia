@@ -34,7 +34,7 @@ class Document:
     # ---------------------------------------------- #
 
     def get_text_based_document(self):
-        from preprocessing.ocr import OCR
+        from .ocr import OCR
 
         OCR(self.doc_path).apply_ocr()
 

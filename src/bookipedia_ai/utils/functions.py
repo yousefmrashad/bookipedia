@@ -1,6 +1,6 @@
 import fitz
 import tiktoken
-import weaviate.collections.classes as wvc
+import weaviate.classes as wvc
 
 from .config import ENCODING_NAME
 

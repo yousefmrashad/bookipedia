@@ -57,12 +57,12 @@ L2 = 16
 SORT = Sort.by_property(name="index", ascending=True)
 
 # Embedding Model
-EMBEDDING_MODEL_NAME = "jinaai/jina-embeddings-v3"
+EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-large-en-v1.5"
 RETRIEVAL_PROMPT = "Represent this sentence for searching relevant passages: "
 
 # Re-ranker Model
 # RERANKER_MODEL_NAME = "mixedbread-ai/mxbai-rerank-large-v1"
-RERANKER_MODEL_NAME = "jinaai/jina-reranker-v2-base-multilingual"
+RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 
 # Database Name
 DB_NAME = "bookipedia"
@@ -72,7 +72,9 @@ PIPER_MODEL_PATH = os.path.join(ROOT, "models/en_US-amy-medium.onnx")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"
 
 # Back-End URLs
-BACKEND_URL = os.getenv("BACKEND_URL", "https://bookipedia-backend.onrender.com/ai-api/")
+BACKEND_URL = os.getenv(
+    "BACKEND_URL", "https://bookipedia-backend.onrender.com/ai-api/"
+)
 # FILE_URL = BACKEND_URL + "file/"
 CHAT_SUMMARY_URL = BACKEND_URL + "chat-summary/"
 POST_HOCR_URL = BACKEND_URL + "ocr-file/"
