@@ -10,6 +10,8 @@ services:
       - WEAVIATE_PORT=8080
       - WEAVIATE_GRPC_PORT=50051
       - USE_TORCH=1
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
     volumes:
       - ./models:/app/models
     depends_on:

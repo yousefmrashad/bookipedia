@@ -20,6 +20,8 @@ from .preprocessing.embedding import HFEmbedding
 from .rag.rag_pipeline import RAGPipeline
 from .utils.config import (
     ACKNOWLEDGE_URL,
+    API_HOST,
+    API_PORT,
     CHAT_SUMMARY_URL,
     PIPER_CONFIG_PATH,
     PIPER_MODEL_PATH,
@@ -440,7 +442,7 @@ async def pages_to_speech(
 
 def main():
     logger.info("Starting Bookipedia AI Server")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=API_HOST, port=API_PORT)
 
 
 if __name__ == "__main__":

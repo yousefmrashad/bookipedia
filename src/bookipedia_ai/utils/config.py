@@ -67,6 +67,15 @@ RERANKER_MODEL_NAME = "jinaai/jina-reranker-v1-turbo-en"
 # Database Name
 DB_NAME = "bookipedia"
 
+# Weaviate Config
+WEAVIATE_HOST = os.getenv("WEAVIATE_HOST", "localhost")
+WEAVIATE_PORT = int(os.getenv("WEAVIATE_PORT", 8080))
+WEAVIATE_GRPC_PORT = int(os.getenv("WEAVIATE_GRPC_PORT", 50051))
+
+# API Config
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_PORT = int(os.getenv("API_PORT", 8000))
+
 # TTS Model Paths
 PIPER_MODEL_PATH = os.path.join(ROOT, "models/en_US-amy-medium.onnx")
 PIPER_CONFIG_PATH = PIPER_MODEL_PATH + ".json"

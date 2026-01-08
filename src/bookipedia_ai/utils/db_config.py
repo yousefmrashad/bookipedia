@@ -1,9 +1,7 @@
-import os
-
 import weaviate
 import weaviate.classes as wvc
 
-from .config import DB_NAME
+from .config import DB_NAME, WEAVIATE_GRPC_PORT, WEAVIATE_HOST, WEAVIATE_PORT
 
 # ================================================== #
 
@@ -11,9 +9,9 @@ from .config import DB_NAME
 class DB:
     def __init__(self):
         self.client = weaviate.connect_to_local(
-            host=os.getenv("WEAVIATE_HOST", "localhost"),
-            port=int(os.getenv("WEAVIATE_PORT", 8080)),
-            grpc_port=int(os.getenv("WEAVIATE_GRPC_PORT", 50051)),
+            host=WEAVIATE_HOST,
+            port=WEAVIATE_PORT,
+            grpc_port=WEAVIATE_GRPC_PORT,
         )
 
     def connect(self):
