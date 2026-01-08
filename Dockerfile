@@ -21,15 +21,17 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 WORKDIR /app
 
-# Copy dependency definitions
-COPY pyproject.toml uv.lock requirements.txt ./
+# 1. Copy ONLY dependency files
+COPY pyproject.toml uv.lock ./
 
-# Copy the rest of the application
+# 2. Install dependencies (this layer stays cached unless lock file changes)
+RUN uv sync --frozen --no-install-project
+
+# 3. Copy the rest of the app (frequent changes happen here)
 COPY src/ src/
 COPY models/README.md models/README.md
 
-# Install dependencies
-# Using uv sync to install into the system python environment
+# 4. Final sync to install the project itself
 RUN uv sync --frozen
 
 # Set environment variables
