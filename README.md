@@ -6,7 +6,7 @@
 <em>Part of the (Bookipedia App) a graduation project at CSED MU.</em>
 
 [![Frontend](https://img.shields.io/badge/frontend-02569B?logo=flutter&logoColor=white)](https://github.com/nadahossamismail/Bookipedia-App) [![Backend](https://img.shields.io/badge/backend-339933?logo=nodedotjs&logoColor=white)](https://github.com/mhmadalaa/bookipedia) [![License: GPL-3.0](https://img.shields.io/badge/license-GPLv3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0) [![CodeFactor](https://www.codefactor.io/repository/github/yousefmrashad/bookipedia/badge/main)](https://www.codefactor.io/repository/github/yousefmrashad/bookipedia/overview/main) 
-[![Docker Build](https://github.com/yousefmrashad/bookipedia/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/yousefmrashad/bookipedia/actions)
+[![Docker Build](https://github.com/yousefmrashad/bookipedia/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/yousefmrashad/bookipedia/actions)[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/yousefmrashad/bookipedia)
 
 
 
