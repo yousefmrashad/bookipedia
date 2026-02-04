@@ -95,7 +95,10 @@ class RAGPipeline:
 
         # Recur if combined sub-summary size still exceeds limit
         if count_tokens(joined_summary) > SUMMARY_TOKEN_LIMIT:
-            joined_summary = await self.summarize_text(joined_summary)
+            joined_summary_text = ""
+            async for chunk in await self.summarize_text(joined_summary):
+                joined_summary_text += chunk
+            joined_summary = joined_summary_text
 
         summary = self.summary_chain.astream({"text": joined_summary})
 
@@ -145,7 +148,7 @@ class RAGPipeline:
     # --------------------------------------------------------------------- #
 
     # -- Retrieval Methods -- #
-    def generate_retrieval_query(
+    async def generate_retrieval_query(
         self, user_prompt: str, chat_summary: str
     ) -> tuple[str, str]:
         retrieval_method_schema = ResponseSchema(
@@ -186,7 +189,7 @@ class RAGPipeline:
         retrieval_query_chain = RETRIEVAL_QUERY_PROMPT | self.llm
 
         # Invoke the retrieval query chain with the user prompt and chat summary
-        response = retrieval_query_chain.invoke(
+        response = await retrieval_query_chain.ainvoke(
             {
                 "user_prompt": user_prompt,
                 "chat_summary": chat_summary,

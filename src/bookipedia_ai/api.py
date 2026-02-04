@@ -9,6 +9,7 @@ import uvicorn
 
 # API
 from fastapi import BackgroundTasks, FastAPI, Query
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
 # TTS
@@ -121,7 +122,7 @@ def process_document(doc: Document, doc_id: str):
 # ---------------------------------------------- #
 
 
-def summarize_chat(chat_id: str, response: str, user_prompt: str, prev_summary: str):
+def summarize_chat(chat_id: str, user_prompt: str, response: str, prev_summary: str):
     """
     Summarizes a chat conversation based on the provided response, user prompt, and previous summary.
 
@@ -137,7 +138,7 @@ def summarize_chat(chat_id: str, response: str, user_prompt: str, prev_summary: 
     logger.info(f"Summarizing chat {chat_id}")
     try:
         chat_summary = rag_pipeline.generate_chat_summary(
-            response, user_prompt, prev_summary
+            user_prompt, response, prev_summary
         )
         response = requests.patch(
             CHAT_SUMMARY_URL + chat_id, json={"chat_summary": chat_summary}
@@ -159,7 +160,7 @@ def summarize_chat(chat_id: str, response: str, user_prompt: str, prev_summary: 
 
 # Endpoints
 @app.get("/")
-async def root():
+def root():
     """
     Root endpoint called when the server is accessed at the root URL.
 
@@ -174,7 +175,7 @@ async def root():
 
 
 @app.post("/add_document/{doc_id}")
-async def add_document(
+def add_document(
     background_tasks: BackgroundTasks, doc_id: str, url: str, lib_doc: bool = False
 ):
     """
@@ -229,7 +230,7 @@ async def add_document(
 
 
 @app.delete("/delete_document/{doc_id}")
-async def delete_document(doc_id: str):
+def delete_document(doc_id: str):
     """
     Deletes a document from the database.
 
@@ -284,13 +285,17 @@ async def chat_response(
         doc_ids = chat_params.doc_ids
 
         # Generate retrieval method & retrieval query
-        retrieval_method, retrieval_query = rag_pipeline.generate_retrieval_query(
+        retrieval_method, retrieval_query = await rag_pipeline.generate_retrieval_query(
             user_prompt, chat_summary
         )
 
         # Generate context
-        context, metadata = rag_pipeline.generate_context(
-            retrieval_method, retrieval_query, doc_ids, enable_web_retrieval
+        context, metadata = await run_in_threadpool(
+            rag_pipeline.generate_context,
+            retrieval_method,
+            retrieval_query,
+            doc_ids,
+            enable_web_retrieval,
         )
 
         # Response generator
@@ -308,7 +313,7 @@ async def chat_response(
 
             # Add chat summary to background tasks
             background_tasks.add_task(
-                summarize_chat, chat_id, response, user_prompt, chat_summary
+                summarize_chat, chat_id, user_prompt, response, chat_summary
             )
 
         logger.info(f"Generated context and response for chat_id: {chat_id}")
@@ -363,7 +368,7 @@ async def summarize_pages(doc_id: str, start_page: int, end_page: int):
 
 
 @app.get("/tts/")
-async def text_to_speech(tts_text: TTSText, speed: float = 1):
+def text_to_speech(tts_text: TTSText, speed: float = 1):
     """
     Generates an audio stream from the given text.
 
@@ -396,7 +401,7 @@ async def text_to_speech(tts_text: TTSText, speed: float = 1):
 
 
 @app.get("/tts_pages/{doc_id}")
-async def pages_to_speech(
+def pages_to_speech(
     doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1
 ):
     """
