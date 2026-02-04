@@ -8,7 +8,7 @@ import requests
 import uvicorn
 
 # API
-from fastapi import BackgroundTasks, FastAPI, Query
+from fastapi import BackgroundTasks, FastAPI, Query, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
@@ -223,7 +223,7 @@ def add_document(
             return {"message": "Document is not text-based. Applying OCR.", "OCR": True}
     except Exception as e:
         logger.exception(f"Exception occurred while adding document {doc_id}: {str(e)}")
-        return {"message": "An error occurred while adding the document."}
+        raise HTTPException(status_code=500, detail="An error occurred while adding the document.")
 
 
 # -------------------------------------------------- #
@@ -249,7 +249,7 @@ def delete_document(doc_id: str):
         logger.exception(
             f"Exception occurred while deleting document {doc_id}: {str(e)}"
         )
-        return {"message": "An error occurred while deleting the document."}
+        raise HTTPException(status_code=500, detail="An error occurred while deleting the document.")
 
 
 # -------------------------------------------------- #
@@ -323,7 +323,7 @@ async def chat_response(
         logger.exception(
             f"Exception occurred while generating chat response for chat_id {chat_id}: {str(e)}"
         )
-        return {"message": "An error occurred while generating the chat response."}
+        raise HTTPException(status_code=500, detail="An error occurred while generating the chat response.")
 
 
 # -------------------------------------------------- #
@@ -359,9 +359,7 @@ async def summarize_pages(doc_id: str, start_page: int, end_page: int):
         logger.exception(
             f"Exception occurred in summarizing pages for doc_id {doc_id}: {str(e)}"
         )
-        return {
-            "message": "An error occurred during the summarization of the specified pages."
-        }
+        raise HTTPException(status_code=500, detail="An error occurred during the summarization of the specified pages.")
 
 
 # -------------------------------------------------- #
@@ -394,7 +392,7 @@ def text_to_speech(tts_text: TTSText, speed: float = 1):
         return StreamingResponse(synthesize_audio(), media_type="audio/raw")
     except Exception as e:
         logger.exception(f"Exception occurred in TTS synthesis: {str(e)}")
-        return {"message": "An error occurred during TTS synthesis."}
+        raise HTTPException(status_code=500, detail="An error occurred during TTS synthesis.")
 
 
 # -------------------------------------------------- #
@@ -437,9 +435,7 @@ def pages_to_speech(
         logger.exception(
             f"Exception occurred in TTS pages synthesis for doc_id {doc_id}: {str(e)}"
         )
-        return {
-            "message": "An error occurred during TTS synthesis for the specified pages."
-        }
+        raise HTTPException(status_code=500, detail="An error occurred during TTS synthesis for the specified pages.")
 
 
 # -------------------------------------------------- #
