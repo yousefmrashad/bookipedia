@@ -255,7 +255,7 @@ def delete_document(doc_id: str):
 # -------------------------------------------------- #
 
 
-@app.get("/chat_response/{chat_id}")
+@app.post("/chat_response/{chat_id}")
 async def chat_response(
     background_tasks: BackgroundTasks,
     chat_id: str,
@@ -329,7 +329,7 @@ async def chat_response(
 # -------------------------------------------------- #
 
 
-@app.get("/summarize_pages/{doc_id}")
+@app.post("/summarize_pages/{doc_id}")
 async def summarize_pages(doc_id: str, start_page: int, end_page: int):
     """
     Summarizes the specified pages of a document.
@@ -365,7 +365,7 @@ async def summarize_pages(doc_id: str, start_page: int, end_page: int):
 # -------------------------------------------------- #
 
 
-@app.get("/tts/")
+@app.post("/tts/")
 def text_to_speech(tts_text: TTSText, speed: float = 1):
     """
     Generates an audio stream from the given text.
@@ -398,7 +398,7 @@ def text_to_speech(tts_text: TTSText, speed: float = 1):
 # -------------------------------------------------- #
 
 
-@app.get("/tts_pages/{doc_id}")
+@app.post("/tts_pages/{doc_id}")
 def pages_to_speech(
     doc_id: str, pages: Annotated[list[int], Query()], speed: float = 1
 ):

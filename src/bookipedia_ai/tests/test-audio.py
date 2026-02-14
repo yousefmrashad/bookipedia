@@ -27,7 +27,7 @@ def audio():
 
     try:
         # Write raw audio to stdout as it's produced
-        for audio_bytes in requests.get(
+        for audio_bytes in requests.post(
             url, json=body, params=params, stream=True
         ).iter_content(chunk_size=32):
             stream.write(audio_bytes)

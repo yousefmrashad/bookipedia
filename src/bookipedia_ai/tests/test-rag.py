@@ -27,6 +27,6 @@ body_web = {
 }
 
 # Print response content
-response = requests.get(url, json=body, params=params, stream=True)
+response = requests.post(url, json=body, params=params, stream=True)
 for line in response.iter_lines():
     print(line.decode("utf-8"))
